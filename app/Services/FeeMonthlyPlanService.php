@@ -521,17 +521,13 @@ class FeeMonthlyPlanService
     /** @return array<string, mixed>|null */
     public function applyMonthWiseToRequest(Request $request, FmFeesInvoice $invoice): ?array
     {
-        if (! $this->monthWiseEnabled()) {
-            return $this->applyManualAllocationsToRequest($request);
+        $collectPrep = $this->applyCollectAllocationsToRequest($request, $invoice);
+        if ($collectPrep !== null) {
+            return $collectPrep;
         }
 
-        $manualAllocator = app(FeeManualAllocationService::class);
-        $collectTotal = $manualAllocator->resolveCollectTotal($request);
-        $useManual = $manualAllocator->isManualMode($request)
-            || ($collectTotal > 0 && $manualAllocator->hasManualGroupPayments($request));
-
-        if ($useManual) {
-            return $this->applyManualAllocationsToRequest($request, $invoice);
+        if (! $this->monthWiseEnabled()) {
+            return null;
         }
 
         $monthsPaid = (int) $request->input('months_to_pay', $request->input('pay_months', 0));
@@ -562,20 +558,24 @@ class FeeMonthlyPlanService
     }
 
     /** @return array<string, mixed>|null */
-    public function applyManualAllocationsToRequest(Request $request, ?FmFeesInvoice $invoice = null): ?array
+    public function applyCollectAllocationsToRequest(Request $request, ?FmFeesInvoice $invoice = null): ?array
     {
         $manualAllocator = app(FeeManualAllocationService::class);
         $collectTotal = $manualAllocator->resolveCollectTotal($request);
 
-        if ($collectTotal <= 0 && ! $manualAllocator->hasManualGroupPayments($request)) {
+        if ($collectTotal <= 0) {
             return null;
         }
 
-        if (! $manualAllocator->isManualMode($request) && ! $manualAllocator->hasManualGroupPayments($request)) {
-            return null;
+        if ($manualAllocator->isManualMode($request)) {
+            if (! $manualAllocator->canManageAllocation()) {
+                throw new \InvalidArgumentException('Only accounts staff can customize payment allocation.');
+            }
+            $extracted = $manualAllocator->validateAndExtract($request);
+        } else {
+            $extracted = $manualAllocator->computeProportionalFromGroups($request, $collectTotal);
         }
 
-        $extracted = $manualAllocator->validateAndExtract($request);
         $manualAllocator->mergePaidAmountsIntoRequest(
             $request,
             $extracted['line_payments'],
@@ -619,6 +619,12 @@ class FeeMonthlyPlanService
         }
 
         return $prep;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function applyManualAllocationsToRequest(Request $request, ?FmFeesInvoice $invoice = null): ?array
+    {
+        return $this->applyCollectAllocationsToRequest($request, $invoice);
     }
 
     public function finalizeTransactionPayment(int $transactionId, FmFeesInvoice $invoice, ?array $prep): void

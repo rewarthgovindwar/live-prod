@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class FeeManualAllocationService
@@ -10,6 +12,37 @@ class FeeManualAllocationService
     public function isManualMode(Request $request): bool
     {
         return $request->input('payment_allocation_mode') === 'manual';
+    }
+
+    public function canManageAllocation(?User $user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        $roleId = (int) $user->role_id;
+
+        if (isTrueSuperAdminRole($roleId) || isSuperDuperAdminRole($roleId)) {
+            return true;
+        }
+
+        $accountantRoleId = DB::table('infix_roles')
+            ->where('is_saas', 0)
+            ->whereRaw('LOWER(name) = ?', ['accountant'])
+            ->value('id');
+
+        if ($accountantRoleId && $roleId === (int) $accountantRoleId) {
+            return true;
+        }
+
+        foreach (['collect_fees', 'fees.fees-invoice', 'fees.fees-invoice-store', 'fees.fees-invoice-update'] as $route) {
+            if (userPermission($route)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasManualGroupPayments(Request $request): bool
@@ -21,6 +54,57 @@ class FeeManualAllocationService
         }
 
         return false;
+    }
+
+    /**
+     * Split collection across fee lines by each line's share of the invoice total.
+     *
+     * @return array{line_payments: array<int, float>, payment_total: float}
+     */
+    public function computeProportionalFromGroups(Request $request, float $collectTotal): array
+    {
+        $collectTotal = round(max(0, $collectTotal), 2);
+        if ($collectTotal <= 0) {
+            return ['line_payments' => [], 'payment_total' => 0];
+        }
+
+        $weights = [];
+        foreach ((array) $request->input('groups', []) as $group) {
+            $feesType = (int) ($group['feesType'] ?? 0);
+            $sub = (float) ($group['sub_total'] ?? 0);
+            if ($sub <= 0) {
+                $amount = (float) ($group['amount'] ?? 0);
+                $weaver = (float) ($group['weaver'] ?? 0);
+                $sub = max(0, $amount - $weaver);
+            }
+            if ($sub > 0) {
+                $weights[$feesType] = round(($weights[$feesType] ?? 0) + $sub, 2);
+            }
+        }
+
+        $weightTotal = array_sum($weights);
+        if ($weightTotal <= 0) {
+            return ['line_payments' => [], 'payment_total' => $collectTotal];
+        }
+
+        $linePayments = [];
+        $allocated = 0.0;
+        $keys = array_keys($weights);
+
+        foreach ($keys as $index => $feesType) {
+            if ($index === count($keys) - 1) {
+                $linePayments[$feesType] = round($collectTotal - $allocated, 2);
+            } else {
+                $amount = round($collectTotal * ($weights[$feesType] / $weightTotal), 2);
+                $linePayments[$feesType] = $amount;
+                $allocated += $amount;
+            }
+        }
+
+        return [
+            'line_payments' => $linePayments,
+            'payment_total' => $collectTotal,
+        ];
     }
 
     /** @return array{line_payments: array<int, float>, payment_total: float} */

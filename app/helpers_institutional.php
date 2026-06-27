@@ -1,6 +1,14 @@
 <?php
 
+use App\Services\FeeManualAllocationService;
 use App\Services\LeaveSetupAccessService;
+
+if (! function_exists('canManageFeePaymentAllocation')) {
+    function canManageFeePaymentAllocation(): bool
+    {
+        return app(FeeManualAllocationService::class)->canManageAllocation();
+    }
+}
 
 if (! function_exists('canManageLeaveSetup')) {
     function canManageLeaveSetup(): bool
