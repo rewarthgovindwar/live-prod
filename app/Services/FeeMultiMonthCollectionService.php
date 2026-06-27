@@ -32,6 +32,7 @@ class FeeMultiMonthCollectionService
 
         return $this->queryService->filtered($filters)
             ->with([
+                'unit',
                 'invoiceDetails.feesType' => static fn ($query) => $query->withoutGlobalScopes(),
             ])
             ->get()

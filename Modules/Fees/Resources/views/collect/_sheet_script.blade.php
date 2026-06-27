@@ -53,15 +53,19 @@ window.initFeeCollectForm = function (root) {
         return String(invoiceId) + ':' + String(feesType);
     }
 
-    function lineRows(invoiceId) {
+    function lineRows(invoiceId, collectibleOnly) {
         const panel = splitPanel(invoiceId);
         if (!panel) return [];
-        return Array.prototype.slice.call(panel.querySelectorAll('.fa-split-line[data-fees-type]'));
+        const rows = Array.prototype.slice.call(panel.querySelectorAll('.fa-split-line[data-fees-type]'));
+        if (!collectibleOnly) return rows;
+        return rows.filter(function (row) {
+            return (parseFloat(row.dataset.due || 0) || 0) > 0;
+        });
     }
 
     function computeMonthSplit(invoiceId, collectAmount) {
         const invoiceBal = invoiceBalance(invoiceId);
-        const rows = lineRows(invoiceId);
+        const rows = lineRows(invoiceId, true);
         const result = {};
         if (!(collectAmount > 0) || !(invoiceBal > 0) || rows.length === 0) {
             return result;
@@ -123,7 +127,8 @@ window.initFeeCollectForm = function (root) {
 
         const collectAmount = amountFor(invoiceId);
         const invoiceBal = invoiceBalance(invoiceId);
-        const rows = lineRows(invoiceId);
+        const allocRows = lineRows(invoiceId, true);
+        const displayRows = lineRows(invoiceId, false);
         const fieldsWrap = panel.querySelector('[data-line-fields]');
         const metaEl = panel.querySelector('[data-split-meta]');
         const progressEl = panel.querySelector('[data-split-progress]');
@@ -131,7 +136,7 @@ window.initFeeCollectForm = function (root) {
         const totalElMonth = panel.querySelector('[data-split-total]');
         const manual = allocationMode === 'manual' && canManageAllocation;
 
-        if (!check.checked || !(collectAmount > 0) || rows.length === 0) {
+        if (!check.checked || !(collectAmount > 0) || displayRows.length === 0) {
             panel.hidden = true;
             if (fieldsWrap) fieldsWrap.innerHTML = '';
             if (card) card.classList.remove('is-mismatch');
@@ -149,23 +154,29 @@ window.initFeeCollectForm = function (root) {
         if (progressEl) progressEl.style.width = pctOfBalance.toFixed(1) + '%';
         if (progressTrack) progressTrack.setAttribute('aria-valuenow', String(Math.round(pctOfBalance)));
 
-        rows.forEach(function (row) {
+        displayRows.forEach(function (row) {
             const feesType = row.dataset.feesType;
             const due = parseFloat(row.dataset.due || 0) || 0;
             const key = lineKey(invoiceId, feesType);
-            let paid = autoSplit[feesType] || 0;
+            let paid = 0;
 
-            if (manual) {
-                if (manualLinePaid[key] === undefined) {
+            if (due > 0) {
+                paid = autoSplit[feesType] || 0;
+
+                if (manual) {
+                    if (manualLinePaid[key] === undefined) {
+                        manualLinePaid[key] = paid;
+                    }
+                    paid = Math.min(Math.max(0, manualLinePaid[key] || 0), due);
+                    manualLinePaid[key] = paid;
+                } else {
                     manualLinePaid[key] = paid;
                 }
-                paid = Math.min(Math.max(0, manualLinePaid[key] || 0), due);
-                manualLinePaid[key] = paid;
-            } else {
-                manualLinePaid[key] = paid;
-            }
 
-            allocated += paid;
+                allocated += paid;
+            } else {
+                delete manualLinePaid[key];
+            }
 
             const textEl = row.querySelector('[data-paid-text]');
             const inputEl = row.querySelector('.fa-month-line-paid');
@@ -187,7 +198,11 @@ window.initFeeCollectForm = function (root) {
                 }
                 if (textEl) {
                     textEl.hidden = false;
-                    textEl.textContent = paid > 0 ? formatINR(paid) : '—';
+                    if (due <= 0) {
+                        textEl.textContent = '—';
+                    } else {
+                        textEl.textContent = paid > 0 ? formatINR(paid) : '—';
+                    }
                 }
             }
         });
@@ -208,7 +223,7 @@ window.initFeeCollectForm = function (root) {
 
         if (fieldsWrap) {
             fieldsWrap.innerHTML = '';
-            rows.forEach(function (row) {
+            allocRows.forEach(function (row) {
                 const feesType = row.dataset.feesType;
                 const paid = manualLinePaid[lineKey(invoiceId, feesType)] || 0;
                 const input = document.createElement('input');
@@ -259,7 +274,7 @@ window.initFeeCollectForm = function (root) {
             }
         }
         if (!c.checked) {
-            lineRows(c.dataset.id).forEach(function (row) {
+            lineRows(c.dataset.id, true).forEach(function (row) {
                 delete manualLinePaid[lineKey(c.dataset.id, row.dataset.feesType)];
             });
             if (card) card.classList.remove('is-mismatch');
@@ -277,7 +292,7 @@ window.initFeeCollectForm = function (root) {
             if (!(collectAmount > 0)) return;
 
             let allocated = 0;
-            lineRows(invoiceId).forEach(function (row) {
+            lineRows(invoiceId, true).forEach(function (row) {
                 allocated += manualLinePaid[lineKey(invoiceId, row.dataset.feesType)] || 0;
             });
             allocated = Math.round(allocated * 100) / 100;
@@ -302,7 +317,7 @@ window.initFeeCollectForm = function (root) {
             const max = parseFloat(i.max || 0);
             if (max && parseFloat(i.value || 0) > max) i.value = max;
             const invoiceId = i.dataset.id;
-            lineRows(invoiceId).forEach(function (row) {
+            lineRows(invoiceId, true).forEach(function (row) {
                 delete manualLinePaid[lineKey(invoiceId, row.dataset.feesType)];
             });
             recalc();
@@ -321,7 +336,7 @@ window.initFeeCollectForm = function (root) {
                 syncRow(check);
             }
             input.value = parseFloat(check.dataset.amount || input.max || 0).toFixed(2);
-            lineRows(invoiceId).forEach(function (row) {
+            lineRows(invoiceId, true).forEach(function (row) {
                 delete manualLinePaid[lineKey(invoiceId, row.dataset.feesType)];
             });
             recalc();

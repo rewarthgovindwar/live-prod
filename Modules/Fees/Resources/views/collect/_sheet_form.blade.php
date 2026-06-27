@@ -26,17 +26,18 @@
             @php
                 $bal = app(\App\Services\FeeMultiMonthCollectionService::class)->invoiceBalance($invoice);
                 $balanceService = app(\App\Services\FeeInvoiceBalanceService::class);
-                $collectibleLines = $invoice->invoiceDetails
+                $invoiceLines = $invoice->invoiceDetails
+                    ->sortBy('id')
+                    ->values()
                     ->map(function ($child) use ($invoice, $balanceService) {
                         $due = round($balanceService->collectibleLineDue($invoice, $child), 2);
-                        if ($due <= 0) {
-                            return null;
-                        }
 
-                        return ['child' => $child, 'due' => $due];
-                    })
-                    ->filter()
-                    ->values();
+                        return [
+                            'child' => $child,
+                            'due' => $due,
+                            'label' => feeInvoiceLineLabel($child, $invoice),
+                        ];
+                    });
             @endphp
             <div class="fa-collect-month {{ $loop->first ? 'is-selected' : '' }}" data-invoice-id="{{ $invoice->id }}" data-balance="{{ $bal }}">
                 <label class="fa-collect-month__main">
@@ -68,7 +69,7 @@
                     </div>
                 </div>
 
-                @if($collectibleLines->isNotEmpty())
+                @if($invoiceLines->isNotEmpty())
                     <div class="fa-month-split" data-invoice-id="{{ $invoice->id }}" @if(! $loop->first) hidden @endif>
                         <div class="fa-month-split__head">
                             <div class="fa-month-split__head-left">
@@ -88,33 +89,42 @@
                         </div>
 
                         <div class="fa-month-split__lines">
-                            @foreach($collectibleLines as $line)
-                                <div class="fa-split-line" data-fees-type="{{ $line['child']->fees_type }}" data-due="{{ $line['due'] }}">
-                                    <div class="fa-split-line__main">
-                                        <span class="fa-split-line__dot" aria-hidden="true"></span>
-                                        <div class="fa-split-line__info">
-                                            <span class="fa-split-line__name">{{ feeInvoiceLineLabel($line['child']) }}</span>
-                                            <span class="fa-split-line__due">Due {{ currency_format($line['due']) }}</span>
+                                @foreach($invoiceLines as $line)
+                                    <div class="fa-split-line {{ $line['due'] <= 0 ? 'is-zero-due' : '' }}"
+                                         data-fees-type="{{ $line['child']->fees_type }}"
+                                         data-due="{{ $line['due'] }}"
+                                         data-label="{{ $line['label'] }}">
+                                        <div class="fa-split-line__main">
+                                            <span class="fa-split-line__dot" aria-hidden="true"></span>
+                                            <div class="fa-split-line__info">
+                                                <span class="fa-split-line__name">{{ $line['label'] }}</span>
+                                                <span class="fa-split-line__due">
+                                                    @if($line['due'] > 0)
+                                                        Due {{ currency_format($line['due']) }}
+                                                    @else
+                                                        No balance due
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="fa-split-line__pay">
+                                            <div class="fa-split-line__bar" aria-hidden="true">
+                                                <div class="fa-split-line__bar-fill" data-line-bar style="width: 0%"></div>
+                                            </div>
+                                            <div class="fa-split-line__amount">
+                                                <span class="fa-month-split__paid-text" data-paid-text>—</span>
+                                                @if(!empty($canManageFeeAllocation) && $line['due'] > 0)
+                                                    <input type="number" min="0" step="0.01" max="{{ $line['due'] }}"
+                                                        class="primary_input_field form-control fa-month-line-paid"
+                                                        data-invoice-id="{{ $invoice->id }}"
+                                                        data-fees-type="{{ $line['child']->fees_type }}"
+                                                        placeholder="0.00"
+                                                        hidden disabled>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="fa-split-line__pay">
-                                        <div class="fa-split-line__bar" aria-hidden="true">
-                                            <div class="fa-split-line__bar-fill" data-line-bar style="width: 0%"></div>
-                                        </div>
-                                        <div class="fa-split-line__amount">
-                                            <span class="fa-month-split__paid-text" data-paid-text>—</span>
-                                            @if(!empty($canManageFeeAllocation))
-                                                <input type="number" min="0" step="0.01" max="{{ $line['due'] }}"
-                                                    class="primary_input_field form-control fa-month-line-paid"
-                                                    data-invoice-id="{{ $invoice->id }}"
-                                                    data-fees-type="{{ $line['child']->fees_type }}"
-                                                    placeholder="0.00"
-                                                    hidden disabled>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+                                @endforeach
                         </div>
 
                         <div class="fa-month-split__footer">
@@ -424,6 +434,20 @@
     .fa-split-line.is-active {
         box-shadow: inset 0 0 0 1.5px rgba(124, 50, 255, 0.35);
         background: rgba(124, 50, 255, 0.03);
+    }
+
+    .fa-split-line.is-zero-due {
+        opacity: 0.62;
+        background: #f8fafc;
+    }
+
+    .fa-split-line.is-zero-due .fa-split-line__dot {
+        background: #cbd5e1;
+    }
+
+    .fa-split-line.is-zero-due .fa-split-line__name {
+        color: var(--fa-muted, #64748b);
+        font-weight: 600;
     }
 
     .fa-split-line__main {

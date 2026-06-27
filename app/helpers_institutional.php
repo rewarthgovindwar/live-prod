@@ -5,9 +5,9 @@ use App\Services\FeeManualAllocationService;
 use App\Services\LeaveSetupAccessService;
 
 if (! function_exists('feeInvoiceLineLabel')) {
-    function feeInvoiceLineLabel(mixed $child): string
+    function feeInvoiceLineLabel(mixed $child, mixed $invoice = null): string
     {
-        return app(FeeInvoiceLineLabelService::class)->labelFor($child);
+        return app(FeeInvoiceLineLabelService::class)->labelFor($child, $invoice);
     }
 }
 

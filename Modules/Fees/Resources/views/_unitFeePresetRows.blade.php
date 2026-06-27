@@ -25,7 +25,7 @@
         </td>
         <td class="period-total subTotal text-muted">{{ number_format($line['amount'], 2) }}</td>
         <input type="hidden" name="groups[{{ $key }}][sub_total]" class="inputSubTotal" value="{{ $line['amount'] }}">
-        <input type="hidden" name="groups[{{ $key }}][note]" value="">
+        <input type="hidden" name="groups[{{ $key }}][note]" value="{{ $line['label'] }}">
         <td class="fee-next-due-display text-nowrap">{{ $dueRange }}</td>
         <input type="hidden" class="paidAmount" name="groups[{{ $key }}][paid_amount]" value="">
         <td>
