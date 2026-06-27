@@ -31,7 +31,9 @@ class FeeMultiMonthCollectionService
         }
 
         return $this->queryService->filtered($filters)
-            ->with(['invoiceDetails.feesType'])
+            ->with([
+                'invoiceDetails.feesType' => static fn ($query) => $query->withoutGlobalScopes(),
+            ])
             ->get()
             ->filter(function (FmFeesInvoice $invoice) {
                 return $this->invoiceBalance($invoice) > 0;

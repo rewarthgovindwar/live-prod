@@ -4,7 +4,6 @@ namespace Modules\Fees\Http\Controllers;
 
 use App\Models\SmBankAccount;
 use App\Models\SmPaymentMethhod;
-use App\Services\FeeInvoiceBalanceService;
 use App\Services\FeeManualAllocationService;
 use App\Services\FeeMultiMonthCollectionService;
 use Brian2694\Toastr\Facades\Toastr;
@@ -14,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class FeeCollectController extends Controller
 {
-    public function show(int $recordId, FeeMultiMonthCollectionService $collection, FeeInvoiceBalanceService $balanceService)
+    public function show(int $recordId, FeeMultiMonthCollectionService $collection)
     {
         $unitId = request()->query('unit_id') ? (int) request()->query('unit_id') : null;
         $invoices = $collection->collectableInvoices($recordId, $unitId);
@@ -35,27 +34,6 @@ class FeeCollectController extends Controller
             ->get();
         $banks = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
 
-        $bifurcationData = $invoices->map(function ($invoice) use ($collection, $balanceService) {
-            $balance = $collection->invoiceBalance($invoice);
-            $lines = $invoice->invoiceDetails->map(function ($child) use ($invoice, $balanceService) {
-                $due = $balanceService->collectibleLineDue($invoice, $child);
-
-                return [
-                    'id' => (int) $child->id,
-                    'fees_type' => (int) $child->fees_type,
-                    'label' => (string) ($child->feesType->name ?? ('Fee #'.$child->fees_type)),
-                    'due' => round($due, 2),
-                ];
-            })->filter(fn (array $line) => $line['due'] > 0)->values();
-
-            return [
-                'invoice_id' => (int) $invoice->id,
-                'balance' => round($balance, 2),
-                'month_label' => (string) ($invoice->month_label ?? ''),
-                'lines' => $lines,
-            ];
-        })->values();
-
         $data = [
             'invoices' => $invoices,
             'record' => $first->recordDetail,
@@ -66,7 +44,6 @@ class FeeCollectController extends Controller
             'banks' => $banks,
             'canOverrideReceipt' => feeCanEditReceiptNumber(),
             'canManageFeeAllocation' => app(FeeManualAllocationService::class)->canManageAllocation(),
-            'bifurcationData' => $bifurcationData,
         ];
 
         if (request()->boolean('modal') || request()->ajax()) {

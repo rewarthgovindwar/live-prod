@@ -1,7 +1,15 @@
 <?php
 
+use App\Services\FeeInvoiceLineLabelService;
 use App\Services\FeeManualAllocationService;
 use App\Services\LeaveSetupAccessService;
+
+if (! function_exists('feeInvoiceLineLabel')) {
+    function feeInvoiceLineLabel(mixed $child): string
+    {
+        return app(FeeInvoiceLineLabelService::class)->labelFor($child);
+    }
+}
 
 if (! function_exists('canManageFeePaymentAllocation')) {
     function canManageFeePaymentAllocation(): bool

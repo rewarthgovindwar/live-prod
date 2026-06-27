@@ -3,10 +3,6 @@
     <input type="hidden" name="idempotency_key" id="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
     <input type="hidden" name="payment_allocation_mode" id="collectAllocationMode" value="auto">
 
-    @php
-        $bifurcationByInvoice = collect($bifurcationData ?? [])->keyBy('invoice_id');
-    @endphp
-
     <div class="fa-collect-section">
         <div class="fa-collect-section__head">
             <div>
@@ -28,8 +24,18 @@
         @foreach($invoices as $invoice)
             @php
                 $bal = app(\App\Services\FeeMultiMonthCollectionService::class)->invoiceBalance($invoice);
-                $lineMeta = $bifurcationByInvoice->get($invoice->id, ['lines' => []]);
-                $feeLines = $lineMeta['lines'] ?? [];
+                $balanceService = app(\App\Services\FeeInvoiceBalanceService::class);
+                $collectibleLines = $invoice->invoiceDetails
+                    ->map(function ($child) use ($invoice, $balanceService) {
+                        $due = round($balanceService->collectibleLineDue($invoice, $child), 2);
+                        if ($due <= 0) {
+                            return null;
+                        }
+
+                        return ['child' => $child, 'due' => $due];
+                    })
+                    ->filter()
+                    ->values();
             @endphp
             <div class="fa-collect-month {{ $loop->first ? 'is-selected' : '' }}" data-invoice-id="{{ $invoice->id }}" data-balance="{{ $bal }}">
                 <label class="fa-collect-month__main">
@@ -58,7 +64,7 @@
                     </div>
                 </div>
 
-                @if(count($feeLines) > 0)
+                @if($collectibleLines->isNotEmpty())
                     <div class="fa-month-split" data-invoice-id="{{ $invoice->id }}" @if(! $loop->first) hidden @endif>
                         <div class="fa-month-split__head">
                             <span class="fa-month-split__title">Fee split for this month</span>
@@ -73,9 +79,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($feeLines as $line)
-                                    <tr data-fees-type="{{ $line['fees_type'] }}" data-due="{{ $line['due'] }}">
-                                        <td>{{ $line['label'] }}</td>
+                                @foreach($collectibleLines as $line)
+                                    <tr data-fees-type="{{ $line['child']->fees_type }}" data-due="{{ $line['due'] }}">
+                                        <td>{{ feeInvoiceLineLabel($line['child']) }}</td>
                                         <td class="text-right">{{ currency_format($line['due']) }}</td>
                                         <td class="text-right fa-month-split__paid-cell">
                                             <span class="fa-month-split__paid-text" data-paid-text>—</span>
@@ -83,7 +89,7 @@
                                                 <input type="number" min="0" step="0.01" max="{{ $line['due'] }}"
                                                     class="primary_input_field form-control fa-month-line-paid"
                                                     data-invoice-id="{{ $invoice->id }}"
-                                                    data-fees-type="{{ $line['fees_type'] }}"
+                                                    data-fees-type="{{ $line['child']->fees_type }}"
                                                     hidden disabled>
                                             @endif
                                         </td>
