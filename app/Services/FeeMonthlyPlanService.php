@@ -522,7 +522,16 @@ class FeeMonthlyPlanService
     public function applyMonthWiseToRequest(Request $request, FmFeesInvoice $invoice): ?array
     {
         if (! $this->monthWiseEnabled()) {
-            return null;
+            return $this->applyManualAllocationsToRequest($request);
+        }
+
+        $manualAllocator = app(FeeManualAllocationService::class);
+        $collectTotal = $manualAllocator->resolveCollectTotal($request);
+        $useManual = $manualAllocator->isManualMode($request)
+            || ($collectTotal > 0 && $manualAllocator->hasManualGroupPayments($request));
+
+        if ($useManual) {
+            return $this->applyManualAllocationsToRequest($request, $invoice);
         }
 
         $monthsPaid = (int) $request->input('months_to_pay', $request->input('pay_months', 0));
@@ -542,6 +551,66 @@ class FeeMonthlyPlanService
             'total_paid_amount' => $prep['payment_total'],
             'add_wallet' => 0,
         ]);
+
+        foreach ($request->input('fees_type', []) as $key => $type) {
+            $extra = $request->input('extraAmount', []);
+            $extra[$key] = 0;
+            $request->merge(['extraAmount' => $extra]);
+        }
+
+        return $prep;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function applyManualAllocationsToRequest(Request $request, ?FmFeesInvoice $invoice = null): ?array
+    {
+        $manualAllocator = app(FeeManualAllocationService::class);
+        $collectTotal = $manualAllocator->resolveCollectTotal($request);
+
+        if ($collectTotal <= 0 && ! $manualAllocator->hasManualGroupPayments($request)) {
+            return null;
+        }
+
+        if (! $manualAllocator->isManualMode($request) && ! $manualAllocator->hasManualGroupPayments($request)) {
+            return null;
+        }
+
+        $extracted = $manualAllocator->validateAndExtract($request);
+        $manualAllocator->mergePaidAmountsIntoRequest(
+            $request,
+            $extracted['line_payments'],
+            $extracted['payment_total']
+        );
+
+        $monthsPaid = max(1, (int) $request->input('months_to_pay', $request->input('pay_months', 1)));
+        $prep = null;
+
+        if ($invoice) {
+            $plan = $this->resolvePlanForInvoice($invoice);
+            if ($plan) {
+                $pending = $plan->installments()->where('status', 'pending')->orderBy('month_index')->get();
+                $monthsPaid = min($monthsPaid, max(1, $pending->count()));
+                $perMonthPaid = $monthsPaid > 0
+                    ? round($extracted['payment_total'] / $monthsPaid, 2)
+                    : $extracted['payment_total'];
+                $selected = $pending->take($monthsPaid)->values();
+                $coveredPayload = $selected
+                    ->map(fn (FeeMonthlyInstallment $i) => $this->installmentPayload($i, $perMonthPaid))
+                    ->all();
+
+                $prep = [
+                    'plan' => $plan,
+                    'months_paid' => $monthsPaid,
+                    'payment_total' => $extracted['payment_total'],
+                    'line_payments' => $extracted['line_payments'],
+                    'period_label' => $this->formatPeriodLabel(
+                        $coveredPayload,
+                        $this->academicMonthCount((int) $invoice->academic_id)
+                    ),
+                    'pending_count' => $pending->count(),
+                ];
+            }
+        }
 
         foreach ($request->input('fees_type', []) as $key => $type) {
             $extra = $request->input('extraAmount', []);

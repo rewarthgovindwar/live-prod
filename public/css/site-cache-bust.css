@@ -1,0 +1,66 @@
+.scb-floating-widget {
+    position: fixed;
+    right: 0;
+    bottom: 72px;
+    z-index: 1040;
+    pointer-events: none;
+}
+
+.scb-edge-tab {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    border-radius: 999px 0 0 999px;
+    padding: 10px 14px 10px 12px;
+    background: #415094;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(65, 80, 148, 0.35);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.scb-edge-tab:hover,
+.scb-edge-tab:focus {
+    background: #2f3d73;
+    outline: none;
+}
+
+.scb-edge-tab.is-loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.scb-edge-tab .ti-reload {
+    font-size: 16px;
+}
+
+.scb-edge-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .scb-floating-widget {
+        bottom: 72px;
+    }
+
+    .scb-edge-label {
+        display: none;
+    }
+
+    .scb-edge-tab {
+        padding: 10px 12px;
+        border-radius: 999px 0 0 999px;
+    }
+}
+
+@media (min-width: 768px) {
+    .cc-floating-widget ~ .scb-floating-widget,
+    body:has(.cc-floating-widget) .scb-floating-widget {
+        bottom: 72px;
+    }
+}

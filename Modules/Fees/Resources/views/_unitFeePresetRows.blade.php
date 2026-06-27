@@ -27,9 +27,9 @@
         <input type="hidden" name="groups[{{ $key }}][sub_total]" class="inputSubTotal" value="{{ $line['amount'] }}">
         <input type="hidden" name="groups[{{ $key }}][note]" value="">
         <td class="fee-next-due-display text-nowrap">{{ $dueRange }}</td>
-        <td>
+        <td class="fiw-col-paid fiw-col-hide">
             <input class="primary_input_field form-control paidAmount" type="number" min="0" step="0.01"
-                name="groups[{{ $key }}][paid_amount]" value="" title="Fill when collecting payment now (whole months only)">
+                name="groups[{{ $key }}][paid_amount]" value="" title="Amount collected for this fee type">
         </td>
         <td>
             <button class="primary-btn icon-only fix-gr-bg" type="button" data-tooltip="tooltip" title="@lang('common.delete')" id="deleteField">

@@ -883,23 +883,21 @@ Route::group(['middleware' => ['XSS', 'subscriptionAccessUrl']], function () {
         // Route::delete('hourly-rate', 'SmHourlyRateController@destroy')->name('hourly-rate');
 
         // Staff leave type
-        // Route::resource('leave-type', 'SmLeaveTypeController')->middleware('userRolePermission:203');
-        Route::get('leave-type', 'Admin\Leave\SmLeaveTypeController@index')->name('leave-type')->middleware('userRolePermission:leave-type');
-        Route::post('leave-type', 'Admin\Leave\SmLeaveTypeController@store')->name('leave-type-store')->middleware('userRolePermission:leave-type-store');
-        Route::get('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@show')->name('leave-type-edit')->middleware('userRolePermission:leave-type-edit');
-        Route::put('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@update')->name('leave-type-update')->middleware('userRolePermission:leave-type-edit');
-        Route::delete('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@destroy')->name('leave-type-delete')->middleware('userRolePermission:leave-type-delete');
+        Route::middleware(\App\Http\Middleware\EnsureLeaveSetupAccess::class)->group(function () {
+            Route::get('leave-type', 'Admin\Leave\SmLeaveTypeController@index')->name('leave-type')->middleware('userRolePermission:leave-type');
+            Route::post('leave-type', 'Admin\Leave\SmLeaveTypeController@store')->name('leave-type-store')->middleware('userRolePermission:leave-type-store');
+            Route::get('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@show')->name('leave-type-edit')->middleware('userRolePermission:leave-type-edit');
+            Route::put('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@update')->name('leave-type-update')->middleware('userRolePermission:leave-type-edit');
+            Route::delete('leave-type/{id}', 'Admin\Leave\SmLeaveTypeController@destroy')->name('leave-type-delete')->middleware('userRolePermission:leave-type-delete');
 
-        // Staff leave define
-        // Route::resource('leave-define', 'Admin\Leave\SmLeaveDefineController')->middleware('userRolePermission:199');
-        Route::get('leave-define', 'Admin\Leave\SmLeaveDefineController@index')->name('leave-define')->middleware('userRolePermission:leave-define');
-        Route::post('leave-define', 'Admin\Leave\SmLeaveDefineController@store')->name('leave-define-store');
-        Route::get('leave-define/{id}', 'Admin\Leave\SmLeaveDefineController@show')->name('leave-define-edit')->middleware('userRolePermission:leave-define-edit');
-        Route::put('leave-define/{id}', 'Admin\Leave\SmLeaveDefineController@update')->name('leave-define-update')->middleware('userRolePermission:leave-define-edit');
-        Route::delete('leave-define', 'Admin\Leave\SmLeaveDefineController@destroy')->name('leave-define-delete')->middleware('userRolePermission:leave-define-delete');
-        Route::post('leave-define-updateLeave', 'Admin\Leave\SmLeaveDefineController@updateLeave')->name('leave-define-updateLeave')->middleware('userRolePermission:leave-define-edit');
-
-        Route::get('leave-define-ajax', 'DatatableQueryController@leaveDefineList')->name('leave-define-ajax')->middleware('userRolePermission:leave-define');
+            Route::get('leave-define', 'Admin\Leave\SmLeaveDefineController@index')->name('leave-define')->middleware('userRolePermission:leave-define');
+            Route::post('leave-define', 'Admin\Leave\SmLeaveDefineController@store')->name('leave-define-store');
+            Route::get('leave-define/{id}', 'Admin\Leave\SmLeaveDefineController@show')->name('leave-define-edit')->middleware('userRolePermission:leave-define-edit');
+            Route::put('leave-define/{id}', 'Admin\Leave\SmLeaveDefineController@update')->name('leave-define-update')->middleware('userRolePermission:leave-define-edit');
+            Route::delete('leave-define', 'Admin\Leave\SmLeaveDefineController@destroy')->name('leave-define-delete')->middleware('userRolePermission:leave-define-delete');
+            Route::post('leave-define-updateLeave', 'Admin\Leave\SmLeaveDefineController@updateLeave')->name('leave-define-updateLeave')->middleware('userRolePermission:leave-define-edit');
+            Route::get('leave-define-ajax', 'DatatableQueryController@leaveDefineList')->name('leave-define-ajax')->middleware('userRolePermission:leave-define');
+        });
 
         // Staff leave define
         // Route::resource('apply-leave', 'SmLeaveRequestController')->middleware('userRolePermission:193');
@@ -2081,6 +2079,7 @@ Route::group(['middleware' => ['XSS', 'subscriptionAccessUrl']], function () {
 
     Route::get('utility', 'Admin\SystemSettings\UtilityController@index')->name('utility');
     Route::get('utilities/{action}', 'Admin\SystemSettings\UtilityController@action')->name('utilities')->middleware('userRolePermission:utility');
+    Route::post('site-cache-bust', 'Admin\SystemSettings\SiteCacheBustController@bust')->name('site-cache-bust');
     Route::get('testup', 'Admin\SystemSettings\UtilityController@testup')->name('testup');
     Route::post('maintenance_mode', 'Admin\SystemSettings\UtilityController@updateMaintenance')->name('updateMaintenance');
 

@@ -12,6 +12,7 @@ $(function () {
     var searchActiveIndex = -1;
     var searchResults = [];
     var DRAFT_KEY = 'fiw_invoice_draft_v1';
+    var allocationMode = 'auto';
     var invoicePrefs = {};
     try { invoicePrefs = JSON.parse($('#fiwInvoicePrefs').text() || '{}'); } catch (e) {}
     var feeUnitAbbrevMap = {};
@@ -345,13 +346,74 @@ $(function () {
         try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
     }
 
+    function totalPaidFromRows() {
+        var total = 0;
+        $('.allFeesTypes .paidAmount').each(function () {
+            if ($(this).prop('disabled')) return;
+            total += parseFloat($(this).val()) || 0;
+        });
+        return Math.round(total * 100) / 100;
+    }
+
+    function updateAllocationSummary() {
+        var collect = parseFloat($('#fiwCollectAmount').val()) || 0;
+        var allocated = totalPaidFromRows();
+        var remaining = Math.round((collect - allocated) * 100) / 100;
+        var $summary = $('#fiwAllocationSummary');
+        if (!$summary.length) return;
+
+        if (collect <= 0) {
+            $summary.text('').removeClass('text-danger');
+            return;
+        }
+
+        var text = 'Allocated: ' + formatRs(allocated);
+        if (Math.abs(remaining) > 0.02) {
+            text += ' · Remaining: ' + formatRs(remaining);
+            $summary.addClass('text-danger').removeClass('text-muted');
+        } else {
+            text += ' · Balanced';
+            $summary.removeClass('text-danger').addClass('text-muted');
+        }
+        $summary.text(text);
+    }
+
+    function setAllocationMode(mode) {
+        allocationMode = mode === 'manual' ? 'manual' : 'auto';
+        $('#paymentAllocationMode').val(allocationMode);
+        $('.fiw-alloc-mode').removeClass('is-active btn-primary').addClass('btn-outline-primary');
+        $('.fiw-alloc-mode[data-mode="' + allocationMode + '"]')
+            .addClass('is-active btn-primary')
+            .removeClass('btn-outline-primary');
+        if (allocationMode === 'manual') {
+            $('#fiwAllocationHint').text('Enter how much goes to each fee type. Total must match the collection amount.');
+        } else {
+            $('#fiwAllocationHint').text('Auto split divides the collection across fee lines by their period totals.');
+        }
+        syncCollectNow();
+    }
+
+    function showPaidColumn(show) {
+        if (show) {
+            $('.fiw-col-paid').removeClass('fiw-col-hide');
+            $('th.fiw-col-paid').removeClass('fiw-col-hide');
+        } else if ((parseFloat($('#fiwCollectAmount').val()) || 0) <= 0 && allocationMode !== 'manual') {
+            $('.fiw-col-paid').addClass('fiw-col-hide');
+            $('th.fiw-col-paid').addClass('fiw-col-hide');
+        }
+    }
+
     function syncCollectNow() {
         if (!isQuickForm) return;
         var collect = parseFloat($('#fiwCollectAmount').val()) || 0;
         var total = invoiceTotalFromRows();
         if (collect <= 0) {
             $('#paymentStatus').val('not');
-            $('.allFeesTypes .paidAmount').val('').prop('disabled', true);
+            if (allocationMode !== 'manual') {
+                $('.allFeesTypes .paidAmount').val('').prop('disabled', true);
+                showPaidColumn(false);
+            }
+            updateAllocationSummary();
             return true;
         }
         var method = getNiceSelectValue($('#fiwCollectMethod')) || $('#fiwCollectMethod').val();
@@ -364,23 +426,31 @@ $(function () {
             return false;
         }
         $('#paymentStatus').val(collect >= total - 0.02 ? 'full' : 'partial');
-        var $presetRows = $('.allFeesTypes tr').filter(function () {
-            return isPresetFeeRow($(this));
+        showPaidColumn(true);
+
+        if (allocationMode === 'manual') {
+            $('.allFeesTypes .paidAmount').prop('disabled', false);
+            updateAllocationSummary();
+            return true;
+        }
+
+        var $feeRows = $('.allFeesTypes tr').filter(function () {
+            return $(this).find('.paidAmount').length > 0;
         });
         var remaining = collect;
-        var presetTotal = 0;
-        $presetRows.each(function () {
-            presetTotal += parseFloat($(this).find('.inputSubTotal').val()) || 0;
+        var feeTotal = 0;
+        $feeRows.each(function () {
+            feeTotal += parseFloat($(this).find('.inputSubTotal').val()) || 0;
         });
-        $presetRows.each(function (i) {
+        $feeRows.each(function (i) {
             var $row = $(this);
             var sub = parseFloat($row.find('.inputSubTotal').val()) || 0;
             var paid = 0;
-            if (presetTotal > 0) {
-                if (i === $presetRows.length - 1) {
+            if (feeTotal > 0 && sub > 0) {
+                if (i === $feeRows.length - 1) {
                     paid = Math.round(remaining * 100) / 100;
                 } else {
-                    paid = Math.round(collect * (sub / presetTotal) * 100) / 100;
+                    paid = Math.round(collect * (sub / feeTotal) * 100) / 100;
                     remaining -= paid;
                 }
             }
@@ -389,6 +459,7 @@ $(function () {
                 $paid.prop('disabled', false).val(paid > 0 ? paid.toFixed(2) : '');
             }
         });
+        updateAllocationSummary();
         return true;
     }
 
@@ -700,7 +771,7 @@ $(function () {
             if (!$row.find('.fee-next-due-display').length) {
                 $row.find('.inputSubTotal').after('<td class="fee-next-due-display fiw-col-hide text-muted">One-time</td>');
             }
-            $row.find('.paidAmount').prop('disabled', true).val('');
+            $row.find('.paidAmount').prop('disabled', allocationMode !== 'manual').val('');
             idx++;
         });
     }
@@ -751,7 +822,7 @@ $(function () {
         }));
         $row.append('<td class="fee-next-due-display fiw-col-hide text-muted">One-time</td>');
         $row.append(
-            '<td class="fiw-col-hide"><input class="primary_input_field form-control paidAmount" type="number" ' +
+            '<td class="fiw-col-paid fiw-col-hide"><input class="primary_input_field form-control paidAmount" type="number" ' +
             'min="0" step="0.01" name="groups[' + idx + '][paid_amount]" value="" disabled></td>'
         );
         $row.append(
@@ -1103,6 +1174,20 @@ $(function () {
         applyPayMonths();
         if (!syncCollectNow()) return false;
 
+        var collect = parseFloat($('#fiwCollectAmount').val()) || 0;
+        if (collect > 0) {
+            var allocated = totalPaidFromRows();
+            if (Math.abs(collect - allocated) > 0.02) {
+                toastr.error(
+                    'Allocated amounts must equal the collection amount (' + formatRs(collect) + '). ' +
+                    'Use Manual split to assign each fee type.',
+                    'Allocation mismatch'
+                );
+                $('#fiwCollectNow').attr('open', true);
+                return false;
+            }
+        }
+
         var classId = isEditMode
             ? ($('input[name="class"]').val() || $('#select_class').val())
             : getNiceSelectValue($('#select_class'));
@@ -1148,7 +1233,27 @@ $(function () {
     });
 
     $(document).on('input change', '#fiwCollectAmount, #fiwCollectMethod, #fiwCollectBank', function () {
+        syncCollectNow();
         saveDraft();
+    });
+
+    $(document).on('click', '.fiw-alloc-mode', function () {
+        setAllocationMode($(this).data('mode'));
+        saveDraft();
+    });
+
+    $(document).on('input', '.allFeesTypes .paidAmount', function () {
+        if (allocationMode === 'manual') {
+            updateAllocationSummary();
+            saveDraft();
+        }
+    });
+
+    $(document).on('toggle', '#fiwCollectNow', function () {
+        if (this.open) {
+            showPaidColumn(true);
+            syncCollectNow();
+        }
     });
 
     $(document).on('change', '#fiwCollectMethod', function () {
@@ -1169,9 +1274,14 @@ $(function () {
         if (total > 0) {
             $('#fiwCollectAmount').val(total.toFixed(2));
             $('#fiwCollectNow').attr('open', true);
+            syncCollectNow();
             saveDraft();
         }
     });
+
+    if ($('#paymentAllocationMode').val() === 'manual') {
+        setAllocationMode('manual');
+    }
 
     niceUpdate($('#fiwCollectMethod'));
     niceUpdate($('#fiwCollectBank'));

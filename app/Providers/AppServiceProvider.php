@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\FileUploadServiceInterface;
 use App\Services\DashboardHeaderTickerService;
 use App\Services\FileUploadService;
+use App\Services\SiteCacheBustService;
 use App\Services\SitePromotion\SitePromotionService;
 use App\Support\ErrorPageContext;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        require_once app_path('helpers_institutional.php');
+
         if (class_exists(\Laravel\Passport\Passport::class)) {
             \App\Services\Mobile\MobileV2PassportService::bootstrapKeysFromStorage();
         }
@@ -36,6 +39,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (! function_exists('asset_version')) {
+            function asset_version(): string
+            {
+                return app(SiteCacheBustService::class)->currentVersion();
+            }
+        }
+
         if ($this->app->runningInConsole()) {
             return;
         }
@@ -69,6 +79,8 @@ class AppServiceProvider extends ServiceProvider
                 'backEnd.dashboard._shell-legacy',
                 'backEnd.systemSettings.site_promotion',
                 'backEnd.partials._site_promotion_global_strip',
+                'backEnd.partials._footer_floating_widgets',
+                'backEnd.partials._site_cache_bust_widget',
                 'backEnd.systemSettings.utilityView',
             ],
             function ($view): void {

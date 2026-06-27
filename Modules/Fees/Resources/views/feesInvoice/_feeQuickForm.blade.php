@@ -158,6 +158,8 @@
     <input type="hidden" name="preset_service_line" id="preset_service_line" value="">
     <input type="hidden" name="fees_type" value="preset">
 
+    @include('fees::feesInvoice._fiwCollectPanel')
+
     <script type="application/json" id="academicYearMonthsData">@json($academicMeta)</script>
     <script type="application/json" id="feeDateInputPattern">@json(systemDateFormatPattern())</script>
     <script type="application/json" id="fiwInvoicePrefs">@json($prefs)</script>
