@@ -3,19 +3,35 @@
     <input type="hidden" name="idempotency_key" id="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
     <input type="hidden" name="payment_allocation_mode" id="collectAllocationMode" value="auto">
 
+    @php
+        $bifurcationByInvoice = collect($bifurcationData ?? [])->keyBy('invoice_id');
+    @endphp
+
     <div class="fa-collect-section">
         <div class="fa-collect-section__head">
             <div>
                 <span class="fa-collect-section__title">Select months</span>
-                <span class="fa-collect-section__hint">Tick a month to pay it. Edit the amount for a part payment.</span>
+                <span class="fa-collect-section__hint">Tick a month, enter how much to collect — the fee split updates inside that month.</span>
             </div>
-            <button type="button" class="fa-collect-selectall" id="collect_select_all">Select all</button>
+            <div class="fa-collect-section__actions">
+                @if(!empty($canManageFeeAllocation))
+                    <label class="fa-collect-custom-toggle">
+                        <input type="checkbox" id="faCustomAllocation" value="1">
+                        <span>Custom split</span>
+                    </label>
+                @endif
+                <button type="button" class="fa-collect-selectall" id="collect_select_all">Select all</button>
+            </div>
         </div>
 
         <div class="fa-collect-months">
         @foreach($invoices as $invoice)
-            @php $bal = app(\App\Services\FeeMultiMonthCollectionService::class)->invoiceBalance($invoice); @endphp
-            <div class="fa-collect-month {{ $loop->first ? 'is-selected' : '' }}">
+            @php
+                $bal = app(\App\Services\FeeMultiMonthCollectionService::class)->invoiceBalance($invoice);
+                $lineMeta = $bifurcationByInvoice->get($invoice->id, ['lines' => []]);
+                $feeLines = $lineMeta['lines'] ?? [];
+            @endphp
+            <div class="fa-collect-month {{ $loop->first ? 'is-selected' : '' }}" data-invoice-id="{{ $invoice->id }}" data-balance="{{ $bal }}">
                 <label class="fa-collect-month__main">
                     <input type="checkbox" name="invoice_ids[]" value="{{ $invoice->id }}" class="month-check"
                            data-amount="{{ $bal }}" data-id="{{ $invoice->id }}" @checked($loop->first)>
@@ -28,6 +44,7 @@
                         <span class="fa-collect-month__bal-amt">{{ currency_format($bal) }}</span>
                     </span>
                 </label>
+
                 <div class="fa-collect-month__pay">
                     <label for="amt_{{ $invoice->id }}" class="fa-collect-month__pay-label">Paying now</label>
                     <div class="fa-collect-amt">
@@ -40,6 +57,49 @@
                                value="{{ $bal }}" @disabled(! $loop->first)>
                     </div>
                 </div>
+
+                @if(count($feeLines) > 0)
+                    <div class="fa-month-split" data-invoice-id="{{ $invoice->id }}" @if(! $loop->first) hidden @endif>
+                        <div class="fa-month-split__head">
+                            <span class="fa-month-split__title">Fee split for this month</span>
+                            <span class="fa-month-split__meta" data-split-meta>—</span>
+                        </div>
+                        <table class="fa-month-split__table">
+                            <thead>
+                                <tr>
+                                    <th>Fee type</th>
+                                    <th class="text-right">Due</th>
+                                    <th class="text-right">Paying</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($feeLines as $line)
+                                    <tr data-fees-type="{{ $line['fees_type'] }}" data-due="{{ $line['due'] }}">
+                                        <td>{{ $line['label'] }}</td>
+                                        <td class="text-right">{{ currency_format($line['due']) }}</td>
+                                        <td class="text-right fa-month-split__paid-cell">
+                                            <span class="fa-month-split__paid-text" data-paid-text>—</span>
+                                            @if(!empty($canManageFeeAllocation))
+                                                <input type="number" min="0" step="0.01" max="{{ $line['due'] }}"
+                                                    class="primary_input_field form-control fa-month-line-paid"
+                                                    data-invoice-id="{{ $invoice->id }}"
+                                                    data-fees-type="{{ $line['fees_type'] }}"
+                                                    hidden disabled>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="text-right"><strong>Month allocation</strong></td>
+                                    <td class="text-right"><strong class="fa-month-split__total" data-split-total>—</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="fa-month-split__fields" data-line-fields></div>
+                    </div>
+                @endif
             </div>
         @endforeach
         </div>
@@ -52,48 +112,6 @@
         </div>
         <strong id="collect_total">₹0.00</strong>
     </div>
-
-    <details class="fa-bifurcation" id="faBifurcation">
-        <summary class="fa-bifurcation__summary">
-            Payment bifurcation
-            <span class="fa-bifurcation__preview text-muted" id="faBifurcationPreview"></span>
-        </summary>
-        <div class="fa-bifurcation__body mt-10">
-            @if(!empty($canManageFeeAllocation))
-                <label class="fa-bifurcation__custom mb-10">
-                    <input type="checkbox" id="faCustomAllocation" value="1">
-                    <span>Custom allocation (accounts only)</span>
-                </label>
-            @endif
-            <small class="text-muted d-block mb-10" id="faBifurcationHint">
-                Split follows each fee type's share of the invoice balance (same percentage on every line).
-            </small>
-            <div class="table-responsive">
-                <table class="table table-sm fa-bifurcation-table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Fee type</th>
-                            <th class="text-right">Balance due</th>
-                            <th class="text-right">Share</th>
-                            <th class="text-right">Paying now</th>
-                        </tr>
-                    </thead>
-                    <tbody id="faBifurcationBody">
-                        <tr>
-                            <td colspan="4" class="text-muted">Select months and enter amounts to see the split.</td>
-                        </tr>
-                    </tbody>
-                    <tfoot id="faBifurcationFoot" style="display:none">
-                        <tr>
-                            <th colspan="3" class="text-right">Total allocated</th>
-                            <th class="text-right" id="faBifurcationTotal">₹0.00</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            <div id="faBifurcationHiddenFields"></div>
-        </div>
-    </details>
 
     <div class="fa-collect-fields">
         <div class="row">
@@ -141,14 +159,32 @@
     </div>
 </form>
 
-<script type="application/json" id="collectBifurcationData">@json($bifurcationData ?? [])</script>
 <script type="application/json" id="collectCanManageAllocation">@json(!empty($canManageFeeAllocation))</script>
 
 <style>
-    .fa-bifurcation { border: 1px solid #e9ecef; border-radius: 8px; padding: 10px 12px; margin: 16px 0; background: #fafbfc; }
-    .fa-bifurcation__summary { cursor: pointer; font-weight: 600; list-style: none; }
-    .fa-bifurcation__summary::-webkit-details-marker { display: none; }
-    .fa-bifurcation__preview { font-weight: 400; font-size: 12px; margin-left: 8px; }
-    .fa-bifurcation__custom { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-    .fa-bifurc-paid-input { max-width: 120px; margin-left: auto; text-align: right; }
+    .fa-collect-section__actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .fa-collect-custom-toggle {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 12px; font-weight: 600; color: var(--fa-muted, #64748b);
+        cursor: pointer; user-select: none; margin: 0;
+    }
+    .fa-month-split {
+        border-top: 1px dashed var(--fa-border-strong, #e2e8f0);
+        background: rgba(255, 255, 255, 0.72);
+        padding: 10px 16px 14px;
+    }
+    .fa-month-split__head {
+        display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        margin-bottom: 8px;
+    }
+    .fa-month-split__title { font-size: 12px; font-weight: 700; color: var(--fa-text, #1e293b); }
+    .fa-month-split__meta { font-size: 11px; color: var(--fa-muted, #64748b); }
+    .fa-month-split__table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .fa-month-split__table th,
+    .fa-month-split__table td { padding: 6px 4px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+    .fa-month-split__table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--fa-muted, #64748b); font-weight: 600; }
+    .fa-month-split__table tfoot td { border-bottom: none; padding-top: 8px; }
+    .fa-month-split__paid-text { font-weight: 700; color: var(--fa-text, #1e293b); }
+    .fa-month-line-paid { max-width: 110px; margin-left: auto; text-align: right; font-weight: 700; }
+    .fa-collect-month.is-selected .fa-month-split[hidden] { display: none !important; }
 </style>
