@@ -12,6 +12,7 @@ window.initFeeCollectForm = function (root) {
     const bankWrap = root.querySelector('#bank_wrap');
     const allocationModeEl = root.querySelector('#collectAllocationMode');
     const customAllocEl = root.querySelector('#faCustomAllocation');
+    const customAllocWrap = root.querySelector('#faCustomAllocationWrap');
 
     let canManageAllocation = false;
     let allocationMode = 'auto';
@@ -55,7 +56,7 @@ window.initFeeCollectForm = function (root) {
     function lineRows(invoiceId) {
         const panel = splitPanel(invoiceId);
         if (!panel) return [];
-        return Array.prototype.slice.call(panel.querySelectorAll('tbody tr[data-fees-type]'));
+        return Array.prototype.slice.call(panel.querySelectorAll('.fa-split-line[data-fees-type]'));
     }
 
     function computeMonthSplit(invoiceId, collectAmount) {
@@ -90,8 +91,33 @@ window.initFeeCollectForm = function (root) {
         return result;
     }
 
+    function setBadge(panel, collectAmount, invoiceBal, manual) {
+        const badge = panel.querySelector('[data-split-badge]');
+        if (!badge) return;
+
+        badge.classList.remove('is-custom', 'is-full');
+        if (manual) {
+            badge.textContent = 'Custom';
+            badge.classList.add('is-custom');
+        } else if (invoiceBal > 0 && Math.abs(collectAmount - invoiceBal) < 0.02) {
+            badge.textContent = 'Full';
+            badge.classList.add('is-full');
+        } else {
+            badge.textContent = 'Auto';
+        }
+    }
+
+    function setSplitHint(panel, manual) {
+        const hint = panel.querySelector('[data-split-hint]');
+        if (!hint) return;
+        hint.textContent = manual
+            ? 'Enter exact amounts per fee type. Total must match the paying amount.'
+            : 'Split follows each fee type\'s share of the balance.';
+    }
+
     function syncMonthSplit(invoiceId) {
         const panel = splitPanel(invoiceId);
+        const card = monthCard(invoiceId);
         const check = root.querySelector('.month-check[data-id="' + invoiceId + '"]');
         if (!panel || !check) return;
 
@@ -100,19 +126,28 @@ window.initFeeCollectForm = function (root) {
         const rows = lineRows(invoiceId);
         const fieldsWrap = panel.querySelector('[data-line-fields]');
         const metaEl = panel.querySelector('[data-split-meta]');
+        const progressEl = panel.querySelector('[data-split-progress]');
+        const progressTrack = panel.querySelector('.fa-month-split__progress-track');
         const totalElMonth = panel.querySelector('[data-split-total]');
         const manual = allocationMode === 'manual' && canManageAllocation;
 
         if (!check.checked || !(collectAmount > 0) || rows.length === 0) {
             panel.hidden = true;
             if (fieldsWrap) fieldsWrap.innerHTML = '';
+            if (card) card.classList.remove('is-mismatch');
             return;
         }
 
         panel.hidden = false;
+        setBadge(panel, collectAmount, invoiceBal, manual);
+        setSplitHint(panel, manual);
 
         const autoSplit = computeMonthSplit(invoiceId, collectAmount);
         let allocated = 0;
+        const pctOfBalance = invoiceBal > 0 ? Math.min(100, Math.max(0, (collectAmount / invoiceBal) * 100)) : 0;
+
+        if (progressEl) progressEl.style.width = pctOfBalance.toFixed(1) + '%';
+        if (progressTrack) progressTrack.setAttribute('aria-valuenow', String(Math.round(pctOfBalance)));
 
         rows.forEach(function (row) {
             const feesType = row.dataset.feesType;
@@ -134,6 +169,11 @@ window.initFeeCollectForm = function (root) {
 
             const textEl = row.querySelector('[data-paid-text]');
             const inputEl = row.querySelector('.fa-month-line-paid');
+            const barEl = row.querySelector('[data-line-bar]');
+            const linePct = due > 0 ? Math.min(100, Math.max(0, (paid / due) * 100)) : 0;
+
+            if (barEl) barEl.style.width = linePct.toFixed(1) + '%';
+            row.classList.toggle('is-active', manual && paid > 0);
 
             if (manual && inputEl) {
                 inputEl.hidden = false;
@@ -153,12 +193,18 @@ window.initFeeCollectForm = function (root) {
         });
 
         allocated = Math.round(allocated * 100) / 100;
+        const mismatch = Math.abs(collectAmount - allocated) > 0.05;
 
         if (metaEl) {
-            const pct = invoiceBal > 0 ? Math.round((collectAmount / invoiceBal) * 10000) / 100 : 0;
-            metaEl.textContent = formatINR(collectAmount) + ' of ' + formatINR(invoiceBal) + ' (' + pct + '%)';
+            metaEl.textContent = formatINR(collectAmount) + ' of ' + formatINR(invoiceBal) + ' (' + pctOfBalance.toFixed(0) + '%)';
         }
-        if (totalElMonth) totalElMonth.textContent = formatINR(allocated);
+        if (totalElMonth) {
+            totalElMonth.textContent = formatINR(allocated);
+            totalElMonth.classList.toggle('is-mismatch', manual && mismatch);
+        }
+        if (card) {
+            card.classList.toggle('is-mismatch', manual && mismatch);
+        }
 
         if (fieldsWrap) {
             fieldsWrap.innerHTML = '';
@@ -182,6 +228,8 @@ window.initFeeCollectForm = function (root) {
         allocationMode = (mode === 'manual' && canManageAllocation) ? 'manual' : 'auto';
         if (allocationModeEl) allocationModeEl.value = allocationMode;
         if (customAllocEl) customAllocEl.checked = allocationMode === 'manual';
+        if (form) form.classList.toggle('is-manual-allocation', allocationMode === 'manual');
+        if (customAllocWrap) customAllocWrap.classList.toggle('is-on', allocationMode === 'manual');
         syncAllMonthSplits();
     }
 
@@ -214,6 +262,7 @@ window.initFeeCollectForm = function (root) {
             lineRows(c.dataset.id).forEach(function (row) {
                 delete manualLinePaid[lineKey(c.dataset.id, row.dataset.feesType)];
             });
+            if (card) card.classList.remove('is-mismatch');
         }
         syncMonthSplit(c.dataset.id);
     }
@@ -260,11 +309,30 @@ window.initFeeCollectForm = function (root) {
         });
     });
 
+    root.querySelectorAll('.fa-pay-fill').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const invoiceId = btn.dataset.fillInvoice;
+            const input = inputFor(invoiceId);
+            const check = root.querySelector('.month-check[data-id="' + invoiceId + '"]');
+            if (!input || !check) return;
+            if (!check.checked) {
+                check.checked = true;
+                syncRow(check);
+            }
+            input.value = parseFloat(check.dataset.amount || input.max || 0).toFixed(2);
+            lineRows(invoiceId).forEach(function (row) {
+                delete manualLinePaid[lineKey(invoiceId, row.dataset.feesType)];
+            });
+            recalc();
+        });
+    });
+
     root.querySelectorAll('.fa-month-line-paid').forEach(function (input) {
         input.addEventListener('input', function () {
             const invoiceId = input.dataset.invoiceId;
             const feesType = input.dataset.feesType;
-            const due = parseFloat(input.closest('tr')?.dataset.due || 0) || 0;
+            const due = parseFloat(input.closest('.fa-split-line')?.dataset.due || 0) || 0;
             let val = parseFloat(input.value || 0) || 0;
             if (val > due) {
                 val = due;
