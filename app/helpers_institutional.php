@@ -39,3 +39,11 @@ if (! function_exists('userCanAccessLeaveSetupRoute')) {
         return userPermission($route);
     }
 }
+
+if (! function_exists('gv')) {
+    /** Safe array getter used across ERP services (e.g. CalendarEventService). */
+    function gv(mixed $array, string|int|null $key, mixed $default = null): mixed
+    {
+        return data_get($array, $key, $default);
+    }
+}
