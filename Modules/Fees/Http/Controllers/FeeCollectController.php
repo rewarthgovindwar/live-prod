@@ -4,6 +4,7 @@ namespace Modules\Fees\Http\Controllers;
 
 use App\Models\SmBankAccount;
 use App\Models\SmPaymentMethhod;
+use App\Services\FeeInvoiceLineLabelService;
 use App\Services\FeeManualAllocationService;
 use App\Services\FeeMultiMonthCollectionService;
 use Brian2694\Toastr\Facades\Toastr;

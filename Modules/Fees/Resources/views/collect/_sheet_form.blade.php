@@ -26,16 +26,17 @@
             @php
                 $bal = app(\App\Services\FeeMultiMonthCollectionService::class)->invoiceBalance($invoice);
                 $balanceService = app(\App\Services\FeeInvoiceBalanceService::class);
+                $labelService = app(\App\Services\FeeInvoiceLineLabelService::class);
                 $invoiceLines = $invoice->invoiceDetails
                     ->sortBy('id')
                     ->values()
-                    ->map(function ($child) use ($invoice, $balanceService) {
+                    ->map(function ($child) use ($invoice, $balanceService, $labelService) {
                         $due = round($balanceService->collectibleLineDue($invoice, $child), 2);
 
                         return [
                             'child' => $child,
                             'due' => $due,
-                            'label' => feeInvoiceLineLabel($child, $invoice),
+                            'label' => $labelService->labelFor($child, $invoice),
                         ];
                     });
             @endphp
