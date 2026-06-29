@@ -24,7 +24,7 @@ function hotfix_write(string $path, string $content, array &$changes): void
     $changes[] = "WROTE {$path} (backup: ".basename($backup).')';
 }
 
-function hotfix_patch(string $path, string $search, string $replace, array &$changes): void
+function hotfix_patch(string $path, string $search, string $replace, array &$changes, bool $replaceAll = false): void
 {
     global $root;
     $full = $root.'/'.ltrim($path, '/');
@@ -39,7 +39,15 @@ function hotfix_patch(string $path, string $search, string $replace, array &$cha
 
         return;
     }
-    hotfix_write($path, str_replace($search, $replace, $content, $count), $changes);
+    if ($replaceAll) {
+        $updated = str_replace($search, $replace, $content, $count);
+    } else {
+        $updated = str_replace($search, $replace, $content, $count);
+        if ($count > 1) {
+            $changes[] = "WARN {$path} ({$count} matches; only first replaced — use replaceAll)";
+        }
+    }
+    hotfix_write($path, $updated, $changes);
     $changes[] = "PATCHED {$path} ({$count} replacement(s))";
 }
 
@@ -93,30 +101,33 @@ try {
         $changes
     );
 
-    // ── 2) Webroot security (production .env was HTTP 200) ────────────────────
+    // ── 2) Webroot security — LiteSpeed ignores <Files .env>; rules must be inside RewriteEngine
     $htaccessFull = $root.'/.htaccess';
     $htaccess = is_file($htaccessFull) ? file_get_contents($htaccessFull) : '';
-    $securityBlock = <<<'HTACCESS'
+    $securityRules = <<<'HTACCESS'
+    # Block sensitive paths (survives site promotion; LiteSpeed-compatible)
+    RewriteRule ^\.env$ - [F,L]
+    RewriteRule ^\.env\. - [F,L]
+    RewriteRule ^composer\.(json|lock)$ - [F,L]
+    RewriteRule ^artisan$ - [F,L]
+    RewriteRule ^package(-lock)?\.json$ - [F,L]
+    RewriteRule ^storage/logs/ - [F,L]
+    RewriteRule ^scripts/ - [F,L]
+    RewriteRule ^vendor/ - [F,L]
+    RewriteRule ^apply_.*\.php$ - [F,L]
+    RewriteRule ^_deploy_.*\.(ps1|sh)$ - [F,L]
+    RewriteRule ^\.git - [F,L]
 
-# --- Production security (hotfix) ---
-<IfModule mod_rewrite.c>
-RewriteRule ^\.env$ - [F,L]
-RewriteRule ^\.env\. - [F,L]
-RewriteRule ^composer\.(json|lock)$ - [F,L]
-RewriteRule ^artisan$ - [F,L]
-RewriteRule ^storage/logs/ - [F,L]
-RewriteRule ^scripts/ - [F,L]
-RewriteRule ^apply_.*\.php$ - [F,L]
-</IfModule>
-
-<FilesMatch "^(\.env|\.env\..*|composer\.(json|lock)|artisan|phpunit\.xml|\.gitignore|\.rr\.yaml|apply_.*\.php)$">
-    Require all denied
-</FilesMatch>
 HTACCESS;
-    if (! str_contains($htaccess, 'Production security (hotfix)')) {
-        hotfix_write('.htaccess', rtrim($htaccess).$securityBlock."\n", $changes);
+    if (! str_contains($htaccess, 'Block sensitive paths')) {
+        if (preg_match('/(RewriteBase \/\s*\n)/', $htaccess, $m)) {
+            hotfix_write('.htaccess', str_replace($m[0], $m[0].$securityRules, $htaccess), $changes);
+            $changes[] = 'PATCHED .htaccess (security rules inside RewriteEngine)';
+        } else {
+            $changes[] = 'SKIP .htaccess (RewriteBase anchor not found)';
+        }
     } else {
-        $changes[] = 'UNCHANGED .htaccess security block already present';
+        $changes[] = 'UNCHANGED .htaccess security rules already present';
     }
 
     // ── 3) Helpers: gv() + ensure institutional helpers file is complete ────
@@ -170,11 +181,12 @@ PHP;
         "return view('backEnd.studentInformation.student_details', [\n                'classes' => \$classes,\n                'sessions' => \$sessions,\n                'currentSession' => \\App\\SmAcademicYear::find(getAcademicId()),\n            ]);",
         $changes
     );
-    hotfix_regex(
+    hotfix_patch(
         'app/Http/Controllers/DatatableQueryController.php',
-        "/return view\\('backEnd\\.studentInformation\\.student_details', \\[(.*?)\\]\\);/s",
-        "return view('backEnd.studentInformation.student_details', [$1, 'currentSession' => \\App\\SmAcademicYear::find(getAcademicId())]);",
-        $changes
+        "'branch_id' => \$branch_id]);",
+        "'branch_id' => \$branch_id, 'currentSession' => \\App\\SmAcademicYear::find(getAcademicId())]);",
+        $changes,
+        true
     );
 
     // ── 5) Student view 500: school_general_settings binding ──────────────────
@@ -243,7 +255,23 @@ PHP,
         }
     }
 
-    // ── 9) Fix CRLF in post-promote-aethon.sh ─────────────────────────────────
+    // ── 9) TaskSmartTaskService: sm_fees_assigns has no balance/due_date columns ─
+    hotfix_patch(
+        'app/Services/Tasks/TaskSmartTaskService.php',
+        "            if (Schema::hasTable('sm_fees_assigns')) {\n                \$dueFees = DB::table('sm_fees_assigns')\n                    ->where('balance', '>', 0)\n                    ->whereDate('due_date', '<=', now()->addDays(3))\n                    ->limit(20)\n                    ->get();\n                foreach (\$dueFees as \$fee) {\n                    \$this->trigger('fees.due', [\n                        'module' => 'fees',\n                        'entity_type' => 'fees_assign',\n                        'entity_id' => \$fee->id,\n                        'school_id' => \$fee->school_id ?? 1,\n                        'description' => 'Fee balance pending',\n                    ], (int) (\$fee->school_id ?? 1));\n                    \$count++;\n                }\n            }",
+        "            if (Schema::hasTable('fee_monthly_installments')) {\n                \$dueFees = DB::table('fee_monthly_installments')\n                    ->where('status', 'pending')\n                    ->whereColumn('paid_amount', '<', 'amount')\n                    ->whereDate('due_date', '<=', now()->addDays(3))\n                    ->limit(20)\n                    ->get();\n                foreach (\$dueFees as \$fee) {\n                    \$this->trigger('fees.due', [\n                        'module' => 'fees',\n                        'entity_type' => 'fee_monthly_installment',\n                        'entity_id' => \$fee->id,\n                        'school_id' => \$fee->school_id ?? 1,\n                        'description' => 'Fee installment due within 3 days',\n                    ], (int) (\$fee->school_id ?? 1));\n                    \$count++;\n                }\n            }",
+        $changes
+    );
+
+    // ── 10) Email WhatsApp fallback: App\User vs App\Models\User type mismatch ─
+    hotfix_patch(
+        'app/Services/Email/EmailFailureWhatsAppFallbackService.php',
+        'use App\User;',
+        'use App\Models\User;',
+        $changes
+    );
+
+    // ── 11) Fix CRLF in post-promote-aethon.sh ────────────────────────────────
     $aethonScript = $root.'/scripts/site-promotion/post-promote-aethon.sh';
     if (is_file($aethonScript)) {
         $normalized = str_replace("\r\n", "\n", (string) file_get_contents($aethonScript));
