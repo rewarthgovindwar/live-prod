@@ -3,291 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aethon — VSS & Dnyanda Trustee Presentation 2026</title>
+  <title>Aethon — VSS Trustee Presentation 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #0c1222;
-      --ink-soft: #1e293b;
-      --navy: #0f2744;
-      --navy-mid: #163a5f;
-      --gold: #c9a227;
-      --gold-light: #f0d78c;
-      --cream: #faf8f4;
-      --white: #ffffff;
-      --muted: #64748b;
-      --success: #059669;
-      --pending: #d97706;
-      --border: rgba(15, 39, 68, 0.1);
-      --shadow: 0 24px 64px rgba(12, 18, 34, 0.12);
+      --ink: #0c1222; --ink-soft: #1e293b; --navy: #0f2744; --navy-mid: #163a5f;
+      --gold: #c9a227; --gold-light: #f0d78c; --cream: #faf8f4; --white: #ffffff;
+      --muted: #64748b; --success: #059669; --pending: #d97706;
+      --border: rgba(15, 39, 68, 0.1); --shadow: 0 24px 64px rgba(12, 18, 34, 0.12);
       --slide-w: 1280px;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background: #0a0f1a;
-      color: var(--ink);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0a0f1a; color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
     .toolbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 24px;
-      background: rgba(12, 18, 34, 0.92);
-      backdrop-filter: blur(12px);
+      padding: 12px 24px; background: rgba(12, 18, 34, 0.92); backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .toolbar-brand {
-      color: var(--gold-light); font-weight: 700; font-size: 0.85rem;
-      letter-spacing: 0.06em; text-transform: uppercase;
-    }
+    .toolbar-brand { color: var(--gold-light); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; }
     .toolbar-actions { display: flex; gap: 10px; align-items: center; }
-    .toolbar button {
-      font-family: inherit; font-size: 0.8rem; font-weight: 600;
-      padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
-      transition: transform 0.15s;
-    }
-    .toolbar button:hover { transform: translateY(-1px); }
-    .btn-pdf {
-      background: linear-gradient(135deg, var(--gold), #a8841a);
-      color: var(--ink);
-      box-shadow: 0 4px 20px rgba(201, 162, 39, 0.35);
-    }
+    .toolbar button { font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-pdf { background: linear-gradient(135deg, var(--gold), #a8841a); color: var(--ink); }
     .btn-nav { background: rgba(255,255,255,0.08); color: #e2e8f0; }
     .slide-counter { color: #94a3b8; font-size: 0.8rem; min-width: 64px; text-align: center; }
 
-    .deck {
-      padding: 72px 24px 48px;
-      display: flex; flex-direction: column; align-items: center; gap: 32px;
-    }
-
+    .deck { padding: 72px 24px 48px; display: flex; flex-direction: column; align-items: center; gap: 32px; }
     .slide {
-      width: min(var(--slide-w), 100%);
-      aspect-ratio: 16 / 9;
-      background: var(--cream);
-      border-radius: 16px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: var(--shadow);
-      display: flex; flex-direction: column;
-      scroll-margin-top: 80px;
+      width: min(var(--slide-w), 100%); aspect-ratio: 16 / 9; background: var(--cream);
+      border-radius: 16px; overflow: hidden; position: relative; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; scroll-margin-top: 80px;
     }
-
-    .slide-inner {
-      flex: 1; padding: 48px 56px 40px;
-      display: flex; flex-direction: column;
-      position: relative; z-index: 1;
-    }
-
-    .slide-num {
-      position: absolute; bottom: 20px; right: 28px;
-      font-size: 0.7rem; font-weight: 700; color: var(--muted); letter-spacing: 0.08em;
-    }
-
+    .slide-inner { flex: 1; padding: 48px 56px 36px; display: flex; flex-direction: column; position: relative; z-index: 1; }
+    .slide-num { position: absolute; bottom: 20px; right: 28px; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
     .slide-footer {
-      padding: 14px 56px; background: var(--navy);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.68rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em;
+      padding: 14px 56px; background: var(--navy); display: flex; justify-content: space-between;
+      font-size: 0.68rem; color: rgba(255,255,255,0.55);
     }
-    .slide-footer strong { color: var(--gold-light); font-weight: 600; }
+    .slide-footer strong { color: var(--gold-light); }
 
-    h1, h2, h3 { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; }
-    h1 { font-size: clamp(2.4rem, 4.5vw, 3.6rem); line-height: 1.1; color: var(--navy); }
-    h2 { font-size: clamp(1.75rem, 3vw, 2.35rem); line-height: 1.15; color: var(--navy); margin-bottom: 8px; }
-    h3 { font-size: 1.05rem; color: var(--navy-mid); margin-bottom: 6px; }
-    .subtitle { font-size: 1.05rem; color: var(--muted); font-weight: 500; margin-top: 12px; }
-    .lead { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.65; max-width: 720px; }
-
-    .tag {
-      display: inline-block; font-size: 0.65rem; font-weight: 800;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      padding: 5px 12px; border-radius: 100px; margin-bottom: 16px;
-    }
+    h1, h2 { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; }
+    h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1.1; color: var(--navy); }
+    h2 { font-size: clamp(1.6rem, 2.8vw, 2.1rem); line-height: 1.15; color: var(--navy); margin-bottom: 10px; }
+    h3 { font-size: 0.95rem; font-weight: 700; color: var(--navy-mid); margin-bottom: 6px; }
+    .subtitle { font-size: 1rem; color: var(--muted); font-weight: 500; margin-top: 10px; }
+    .lead { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.7; }
+    .tag { display: inline-block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 12px; border-radius: 100px; margin-bottom: 14px; }
     .tag-gold { background: rgba(201,162,39,0.15); color: #8a6d12; }
     .tag-navy { background: rgba(15,39,68,0.08); color: var(--navy); }
     .tag-pending { background: rgba(217,119,6,0.12); color: #b45309; }
 
-    .slide-title {
-      background: linear-gradient(145deg, var(--navy) 0%, #0a1628 50%, #122a4a 100%);
-    }
+    .slide-title { background: linear-gradient(145deg, var(--navy) 0%, #0a1628 50%, #122a4a 100%); }
     .slide-title .slide-inner { justify-content: center; }
     .slide-title h1 { color: var(--white); }
-    .slide-title .subtitle { color: rgba(255,255,255,0.65); font-size: 1.15rem; }
-    .slide-title .gold-bar {
-      width: 72px; height: 4px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-light));
-      border-radius: 2px; margin: 24px 0;
-    }
-    .slide-title .meta { margin-top: 28px; font-size: 0.85rem; color: rgba(255,255,255,0.4); }
-    .slide-title::before {
-      content: ''; position: absolute; top: -20%; right: -10%;
-      width: 55%; height: 140%;
-      background: radial-gradient(ellipse, rgba(201,162,39,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .slide-title::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
-      background: linear-gradient(90deg, var(--gold), transparent 80%);
-    }
+    .slide-title .subtitle { color: rgba(255,255,255,0.6); }
+    .slide-title .gold-bar { width: 72px; height: 4px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 2px; margin: 22px 0; }
+    .slide-title .meta { margin-top: 24px; font-size: 0.82rem; color: rgba(255,255,255,0.38); }
+    .slide-title::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--gold), transparent 80%); }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; flex: 1; align-items: start; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .slide-quote { background: linear-gradient(160deg, var(--navy) 0%, #0a1628 100%); }
+    .slide-quote .slide-inner { justify-content: center; align-items: center; text-align: center; }
+    .slide-quote blockquote { font-family: 'DM Serif Display', serif; font-size: clamp(1.35rem, 2.4vw, 1.9rem); color: var(--white); line-height: 1.45; max-width: 760px; }
+    .slide-quote em { color: var(--gold-light); font-style: italic; }
+
+    .slide-accent::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: linear-gradient(180deg, var(--gold), var(--navy)); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .content-grow { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
-    ul.clean { list-style: none; }
-    ul.clean li {
-      padding: 8px 0 8px 22px; position: relative;
-      font-size: 0.9rem; color: var(--ink-soft);
-    }
-    ul.clean li::before {
-      content: ''; position: absolute; left: 0; top: 15px;
-      width: 8px; height: 8px; border-radius: 50%; background: var(--gold);
-    }
+    .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .ba-col { border-radius: 12px; padding: 22px 24px; }
+    .ba-before { background: #fef2f2; border: 1px solid #fecaca; }
+    .ba-after { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .ba-col h3 { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+    .ba-before h3 { color: #b91c1c; }
+    .ba-after h3 { color: #047857; }
+    .ba-col ul { list-style: none; }
+    .ba-col li { font-size: 0.82rem; color: var(--ink-soft); padding: 5px 0; padding-left: 16px; position: relative; }
+    .ba-before li::before { content: '—'; position: absolute; left: 0; color: #f87171; }
+    .ba-after li::before { content: '+'; position: absolute; left: 0; color: #34d399; font-weight: 700; }
 
-    .need-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 12px; padding: 18px; height: 100%;
-    }
-    .need-card .num {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 8px;
-    }
-    .need-card h3 {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;
-    }
-    .need-card p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+    .pillar { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: 100%; }
+    .pillar .icon { font-size: 1.4rem; margin-bottom: 10px; }
+    .pillar p { font-size: 0.78rem; color: var(--muted); line-height: 1.55; margin-top: 6px; }
 
-    .feature-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 12px; padding: 20px; height: 100%;
-    }
-    .feature-card .icon {
-      width: 40px; height: 40px; border-radius: 10px;
+    .stat-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .stat { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; text-align: center; flex: 1; min-width: 100px; }
+    .stat .n { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--navy); }
+    .stat .l { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+
+    .compact-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+    .compact-list span { font-size: 0.8rem; color: var(--ink-soft); padding: 6px 0; border-bottom: 1px solid var(--border); }
+
+    .honest-split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .box { border-radius: 12px; padding: 20px 22px; }
+    .box-yes { background: var(--white); border: 1px solid var(--border); border-top: 3px solid var(--success); }
+    .box-no { background: #f8fafc; border: 1px solid var(--border); }
+    .box ul { list-style: none; margin-top: 10px; }
+    .box li { font-size: 0.8rem; color: var(--ink-soft); padding: 4px 0; }
+
+    .ask-box {
       background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; margin-bottom: 12px;
+      border-radius: 14px; padding: 24px 28px; color: white; margin-top: 16px;
     }
-    .feature-card h3 {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.92rem; font-weight: 700;
-    }
-    .feature-card p { font-size: 0.78rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+    .ask-box h3 { color: var(--gold-light); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    .ask-box p { font-size: 0.88rem; line-height: 1.6; color: rgba(255,255,255,0.88); }
 
-    .stat-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; text-align: center;
+    .pending-note {
+      background: #fffbeb; border: 1px dashed var(--pending); border-radius: 10px;
+      padding: 14px 18px; font-size: 0.82rem; color: #92400e; margin-top: 14px;
     }
-    .stat-card .num {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.9rem; color: var(--navy); line-height: 1;
-    }
-    .stat-card .label {
-      font-size: 0.65rem; font-weight: 600; color: var(--muted);
-      margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-
-    .honest-box {
-      background: var(--white); border-left: 4px solid var(--gold);
-      border-radius: 0 12px 12px 0; padding: 20px 24px;
-      box-shadow: 0 4px 20px rgba(15,39,68,0.06);
-    }
-    .honest-box p { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.6; }
-
-    .not-box {
-      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-      border: 1px solid var(--border);
-      border-radius: 14px; padding: 28px 32px;
-    }
-    .not-box h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.4rem; color: var(--navy); margin-bottom: 12px;
-    }
-    .not-box p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
-
-    .pending-card {
-      background: linear-gradient(135deg, #fffbeb, #fef3c7);
-      border: 2px dashed var(--pending);
-      border-radius: 14px; padding: 22px 28px; text-align: center;
-    }
-    .pending-card h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.35rem; color: #92400e; margin-bottom: 8px;
-    }
-    .pending-card p { font-size: 0.82rem; color: #78350f; line-height: 1.55; }
-
-    .roadmap { display: flex; flex-direction: column; gap: 10px; }
-    .roadmap-item {
-      display: flex; align-items: center; gap: 14px;
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 16px;
-    }
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .status-live { background: var(--success); box-shadow: 0 0 0 3px rgba(5,150,105,0.2); }
-    .status-pending { background: var(--pending); box-shadow: 0 0 0 3px rgba(217,119,6,0.2); }
-    .roadmap-item span { font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
-    .status-label {
-      margin-left: auto; font-size: 0.65rem; font-weight: 800;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 3px 10px; border-radius: 100px;
-    }
-    .label-live { background: #d1fae5; color: #047857; }
-    .label-pending { background: #fef3c7; color: #b45309; }
-
-    .slide-quote {
-      background: linear-gradient(160deg, var(--navy) 0%, #0a1628 100%);
-    }
-    .slide-quote .slide-inner { justify-content: center; align-items: center; text-align: center; }
-    .slide-quote blockquote {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.4rem, 2.6vw, 2rem);
-      color: var(--white); line-height: 1.4; max-width: 780px;
-    }
-    .slide-quote blockquote em { color: var(--gold-light); font-style: italic; }
-
-    .slide-accent::before {
-      content: ''; position: absolute; top: 0; left: 0;
-      width: 6px; height: 100%;
-      background: linear-gradient(180deg, var(--gold), var(--navy));
-    }
-
-    .unit-row {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 14px;
-      font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 8px;
-    }
-    .unit-badge {
-      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em;
-      text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
-    }
-    .badge-academic { background: #dbeafe; color: #1d4ed8; }
-    .badge-hostel { background: #fce7f3; color: #be185d; }
 
     @media print {
       @page { size: landscape; margin: 0; }
       body { background: white; }
       .toolbar { display: none !important; }
       .deck { padding: 0; gap: 0; }
-      .slide {
-        width: 100%; aspect-ratio: unset; height: 100vh;
-        border-radius: 0; box-shadow: none;
-        page-break-after: always; break-after: page;
-      }
+      .slide { width: 100%; aspect-ratio: unset; height: 100vh; border-radius: 0; box-shadow: none; page-break-after: always; }
       .slide:last-child { page-break-after: auto; }
     }
-
     @media (max-width: 900px) {
-      .slide-inner { padding: 32px 28px; }
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .slide-inner { padding: 28px; }
+      .grid-2, .grid-3, .before-after, .honest-split, .compact-list { grid-template-columns: 1fr; }
       .toolbar-actions .btn-nav { display: none; }
     }
   </style>
@@ -295,384 +137,261 @@
 <body>
 
   <nav class="toolbar">
-    <div class="toolbar-brand">Aethon · VSS & Dnyanda · 2026</div>
+    <div class="toolbar-brand">VSS Trustee Presentation · 2026</div>
     <div class="toolbar-actions">
-      <span class="slide-counter" id="counter">1 / 18</span>
-      <button class="btn-nav" id="prev" type="button">← Prev</button>
-      <button class="btn-nav" id="next" type="button">Next →</button>
-      <button class="btn-pdf" type="button" onclick="window.print()">↓ Save as PDF</button>
+      <span class="slide-counter" id="counter">1 / 12</span>
+      <button class="btn-nav" id="prev" type="button">←</button>
+      <button class="btn-nav" id="next" type="button">→</button>
+      <button class="btn-pdf" type="button" onclick="window.print()">↓ PDF</button>
     </div>
   </nav>
 
-  <main class="deck" id="deck">
+  <main class="deck">
 
     <!-- 1 -->
-    <section class="slide slide-title" data-slide="1">
+    <section class="slide slide-title">
       <div class="slide-inner">
-        <span class="tag tag-gold">Trustee Meeting 2026</span>
-        <h1>Aethon</h1>
+        <span class="tag tag-gold">Trustee Meeting · June 2026</span>
+        <h1>Digital Stewardship<br>of the Samiti</h1>
         <div class="gold-bar"></div>
-        <p class="subtitle">A custom platform built for<br>Vidyarthi Sahayyak Samiti Warora & Dnyanda</p>
-        <p class="meta">dnyanda.vss.ac</p>
+        <p class="subtitle">Aethon — the platform we built for VSS Warora & Dnyanda</p>
+        <p class="meta">Presented to the Board of Trustees · dnyanda.vss.ac</p>
       </div>
-      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span>June 2026</span></footer>
+      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span>Confidential</span></footer>
     </section>
 
-    <!-- 2 WHO WE ARE -->
-    <section class="slide slide-accent" data-slide="2">
+    <!-- 2 WHY THIS MEETING -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">Who We Are</span>
-        <h2>Not off-the-shelf. Built for us.</h2>
-        <div class="content-grow" style="gap:24px">
-          <p class="lead">Aethon is a <strong>custom-developed platform</strong> for VSS Warora and Dnyanda. It was designed from the ground up with our needs in mind — not bought from a catalogue and bent to fit.</p>
-          <div class="grid-3" style="margin-top:8px">
-            <div class="honest-box"><p><strong>Our institution.</strong> Schools, junior college, and hostels under one Samiti.</p></div>
-            <div class="honest-box"><p><strong>Our workflows.</strong> How we admit students, collect fees, run hostels, and talk to parents.</p></div>
-            <div class="honest-box"><p><strong>Our servers.</strong> We own the data. The platform grows when we need it to.</p></div>
+        <span class="tag tag-navy">Purpose</span>
+        <h2>Why this is before the Board today</h2>
+        <div class="content-grow">
+          <p class="lead" style="margin-bottom:24px">This is not a software demo. The Board is being asked to understand <strong>how VSS governs its digital operations</strong> — what we built, why we built it, what it has changed, and what we need to continue.</p>
+          <div class="grid-3">
+            <div class="pillar"><div class="icon">①</div><h3>Accountability</h3><p>Trustees should know how student data, fees, and hostel operations are managed digitally.</p></div>
+            <div class="pillar"><div class="icon">②</div><h3>Stewardship</h3><p>We invested in our own platform. The Board should understand that asset and its direction.</p></div>
+            <div class="pillar"><div class="icon">③</div><h3>Decision</h3><p>Continued investment in Aethon — including pending work — needs Board awareness and support.</p></div>
           </div>
         </div>
       </div>
       <span class="slide-num">02</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Who We Are</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Purpose</span></footer>
     </section>
 
-    <!-- 3 THE NEED -->
-    <section class="slide slide-accent" data-slide="3">
+    <!-- 3 THE SAMITI -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">The Need</span>
-        <h2>Why we built Aethon</h2>
+        <span class="tag tag-navy">Context</span>
+        <h2>The organisation we are governing</h2>
         <div class="grid-2 content-grow">
           <div>
-            <p class="lead" style="margin-bottom:16px">VSS runs <strong>schools and hostels together</strong>. No generic software understood that. We needed one place — not separate tools for each unit, not paper registers that don't talk to each other.</p>
-            <ul class="clean">
-              <li>One system for hostel and school operations</li>
-              <li>Staff, parents, and students connected digitally</li>
-              <li>Documents, fees, and attendance in one record</li>
-              <li>A platform that keeps running — even when things break</li>
-            </ul>
+            <p class="lead" style="margin-bottom:16px">Vidyarthi Sahayyak Samiti Warora is not a single school. It is a <strong>charitable trust</strong> running academics and residential care across multiple locations — under one governing body, one mission.</p>
+            <p class="lead">Dnyanda is the academic and residential identity through which this work is carried out. Any digital system must serve <strong>the whole Samiti</strong>, not one building.</p>
           </div>
           <div>
-            <p style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Our units today</p>
-            <div class="unit-row"><span class="unit-badge badge-academic">School</span> Dnyanda School Satefal</div>
-            <div class="unit-row"><span class="unit-badge badge-academic">College</span> Dnyanda Jr. College Satefal</div>
-            <div class="unit-row"><span class="unit-badge badge-hostel">Hostel</span> Dnyanda Hostel Warora</div>
-            <div class="unit-row"><span class="unit-badge badge-hostel">Hostel</span> Spandan Hostel Hinganghat</div>
-            <div class="unit-row"><span class="unit-badge badge-hostel">Hostel</span> Caring Friends Girls Hostel</div>
-            <div class="unit-row"><span class="unit-badge badge-academic">Programme</span> Bajaj Jeevan Vikas Kendra</div>
+            <div class="stat-row" style="margin-bottom:16px">
+              <div class="stat"><div class="n">6</div><div class="l">Units</div></div>
+              <div class="stat"><div class="n">664</div><div class="l">Students</div></div>
+              <div class="stat"><div class="n">558</div><div class="l">Parents</div></div>
+            </div>
+            <p style="font-size:0.78rem;color:var(--muted);line-height:1.6">2 academic units · 4 hostels · programmes across Warora, Hinganghat & Satefal · 1,346 people on the system today</p>
           </div>
         </div>
       </div>
       <span class="slide-num">03</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>The Need</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Context</span></footer>
     </section>
 
-    <!-- 4 NEEDS OVERVIEW -->
-    <section class="slide slide-accent" data-slide="4">
+    <!-- 4 THE PROBLEM -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-gold">What We Asked For</span>
-        <h2>The needs Aethon was built to meet</h2>
-        <div class="grid-4 content-grow">
-          <div class="need-card"><div class="num">01</div><h3>Unified Hostel & Schools</h3><p>One platform for academic and residential units</p></div>
-          <div class="need-card"><div class="num">02</div><h3>Attendance</h3><p>Daily tracking for students and staff</p></div>
-          <div class="need-card"><div class="num">03</div><h3>Fee Collection</h3><p>Collect, track, and receipt fees online and offline</p></div>
-          <div class="need-card"><div class="num">04</div><h3>Biometric</h3><p>Identity-verified attendance at point of entry</p></div>
-          <div class="need-card"><div class="num">05</div><h3>Document Generation</h3><p>Bonafide, certificates, receipts — generated from live data</p></div>
-          <div class="need-card"><div class="num">06</div><h3>Timely Message System</h3><p>Reach parents and staff when it matters</p></div>
-          <div class="need-card"><div class="num">07</div><h3>Self-Healing Software</h3><p>Detect problems, alert staff, recover automatically</p></div>
-          <div class="need-card"><div class="num">08</div><h3>Document Uploading</h3><p>Store and retrieve student and institutional documents</p></div>
+        <span class="tag tag-navy">The Problem</span>
+        <h2>What we were dealing with</h2>
+        <div class="before-after content-grow">
+          <div class="ba-col ba-before">
+            <h3>Before</h3>
+            <ul>
+              <li>Schools and hostels run on separate processes</li>
+              <li>Paper registers, manual fee tracking, phone-call parent updates</li>
+              <li>No single view for trustees across units</li>
+              <li>Documents re-typed by hand — errors, delays</li>
+              <li>Nothing built for a trust running both academics and residential care</li>
+              <li>Off-the-shelf software did not fit — and we are not a generic school</li>
+            </ul>
+          </div>
+          <div class="ba-col ba-after">
+            <h3>What we needed</h3>
+            <ul>
+              <li>One system for hostel and school together</li>
+              <li>Attendance and fees tracked digitally</li>
+              <li>Parents reached in time — not days later</li>
+              <li>Documents generated from live records</li>
+              <li>Software that keeps running when things go wrong</li>
+              <li>Built for VSS and Dnyanda — not bought off a shelf</li>
+            </ul>
+          </div>
         </div>
-        <p style="font-size:0.8rem;color:var(--muted);margin-top:12px;text-align:center">And a lot more — added as the Samiti's needs grew.</p>
       </div>
       <span class="slide-num">04</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Core Needs</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>The Problem</span></footer>
     </section>
 
-    <!-- 5 UNIFIED -->
-    <section class="slide slide-accent" data-slide="5">
+    <!-- 5 THE ANSWER -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-gold">Core Need</span>
-        <h2>Unified system for hostel and schools</h2>
-        <div class="grid-2 content-grow">
-          <ul class="clean">
-            <li>One login across all VSS and Dnyanda units</li>
-            <li>Shared student and parent records — no duplicate entry</li>
-            <li>Switch context between school, college, and hostel</li>
-            <li>Role-based access — warden sees hostel, teacher sees class</li>
-            <li>Trustee-level view across the whole Samiti</li>
-          </ul>
-          <div class="feature-card" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));border:none;color:white;padding:28px">
-            <h3 style="color:var(--gold-light);font-size:1rem;margin-bottom:12px">This is what makes Aethon ours</h3>
-            <p style="color:rgba(255,255,255,0.75);font-size:0.85rem;line-height:1.65">Generic school software is built for one building. Aethon was built because <strong style="color:var(--gold-light)">we run schools and hostels as one organisation</strong> — and needed software that understood that from day one.</p>
-          </div>
+        <span class="tag tag-gold">Our Response</span>
+        <h2>We built Aethon</h2>
+        <div class="content-grow" style="max-width:820px">
+          <p class="lead" style="font-size:1.05rem;margin-bottom:20px"><strong>Aethon is a custom-developed platform for VSS Warora and Dnyanda.</strong> It was designed with our needs in mind — because nothing on the market understood that we run schools and hostels as one organisation.</p>
+          <p class="lead">We did not license a product. We built an asset. It lives on our servers. Our data stays ours. It evolves when the Samiti's needs evolve.</p>
+          <p class="lead" style="margin-top:16px;color:var(--muted)">We are not ePrashashan. We are not trying to be. That is someone else's product for someone else's institution.</p>
         </div>
       </div>
       <span class="slide-num">05</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Unified Platform</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Our Response</span></footer>
     </section>
 
-    <!-- 6 ATTENDANCE + BIOMETRIC -->
-    <section class="slide slide-accent" data-slide="6">
+    <!-- 6 QUOTE -->
+    <section class="slide slide-quote">
       <div class="slide-inner">
-        <span class="tag tag-navy">Feature</span>
-        <h2>Attendance & biometric</h2>
-        <div class="grid-2 content-grow">
-          <div class="feature-card">
-            <div class="icon">📋</div>
-            <h3>Attendance</h3>
-            <p>Daily student and staff attendance tracked per class, section, and unit. Reports available for admin and trustees. Reduces manual register work.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">👆</div>
-            <h3>Biometric</h3>
-            <p>Biometric integration for identity-verified attendance — students and staff marked present at point of entry, not on paper.</p>
-          </div>
-        </div>
+        <blockquote>We didn't build Aethon to compete with anyone.<br>We built it because <em>nothing else fit the Samiti.</em></blockquote>
       </div>
-      <span class="slide-num">06</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Attendance</span></footer>
+      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span></span></footer>
     </section>
 
-    <!-- 7 FEES -->
-    <section class="slide slide-accent" data-slide="7">
+    <!-- 7 WHAT IT HAS CHANGED -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">Feature</span>
-        <h2>Fee collection</h2>
-        <div class="grid-2 content-grow">
-          <ul class="clean">
-            <li>Fee heads configured per unit — school fees, hostel fees, others</li>
-            <li>Monthly installment plans</li>
-            <li>Online payment via Razorpay</li>
-            <li>Printed and digital receipts</li>
-            <li>Parent can view balance and pay through the portal</li>
-            <li>Accountant workflows for collection and reconciliation</li>
-          </ul>
-          <div class="stat-card" style="padding:28px;display:flex;flex-direction:column;justify-content:center">
-            <div class="num">971</div>
-            <div class="label" style="font-size:0.75rem;margin-top:8px">Fee installments tracked live</div>
-            <p style="font-size:0.78rem;color:var(--muted);margin-top:16px;text-align:center;line-height:1.5">Built around how VSS actually collects — not a template from a vendor brochure.</p>
-          </div>
+        <span class="tag tag-gold">Impact</span>
+        <h2>What has changed for the Samiti</h2>
+        <div class="grid-3 content-grow">
+          <div class="pillar"><div class="icon">🏛</div><h3>One organisation, one system</h3><p>Trustees and admin can see across all six units without reconciling separate registers or tools.</p></div>
+          <div class="pillar"><div class="icon">👨‍👩‍👧</div><h3>Parents are connected</h3><p>558 families on the portal — fees, updates, and communication digitally, not by chance.</p></div>
+          <div class="pillar"><div class="icon">💰</div><h3>Fees are traceable</h3><p>971 installments tracked. Collection, receipts, and balances — auditable, not guessed.</p></div>
+          <div class="pillar"><div class="icon">📋</div><h3>Attendance is recorded</h3><p>Daily tracking with biometric verification — less manual register work, more reliable records.</p></div>
+          <div class="pillar"><div class="icon">📜</div><h3>Documents from data</h3><p>Certificates and receipts generated from live records — not re-typed, not error-prone.</p></div>
+          <div class="pillar"><div class="icon">🔧</div><h3>System watches itself</h3><p>Self-healing — problems detected, staff alerted, staging before go-live. Less downtime when it matters most.</p></div>
         </div>
       </div>
       <span class="slide-num">07</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Fee Collection</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Impact</span></footer>
     </section>
 
-    <!-- 8 DOCUMENTS -->
-    <section class="slide slide-accent" data-slide="8">
+    <!-- 8 CAPABILITIES - ONE SLIDE ONLY -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">Feature</span>
-        <h2>Document generation & uploading</h2>
-        <div class="grid-2 content-grow">
-          <div class="feature-card">
-            <div class="icon">📜</div>
-            <h3>Document Generation</h3>
-            <p>Bonafide certificates, leaving certificates, transfer certificates, fee receipts, and report cards — generated from live student data. No re-typing. No copy-paste errors.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">📁</div>
-            <h3>Document Uploading</h3>
-            <p>Upload and store student documents, institutional files, and scanned records. Attached to the student profile — retrievable anytime by authorised staff.</p>
-          </div>
+        <span class="tag tag-navy">Under the hood</span>
+        <h2>What the platform covers — in brief</h2>
+        <p class="lead" style="margin-bottom:14px;font-size:0.85rem">These are the capabilities that support the impact above. Not a product catalogue — the tools behind how the Samiti runs day to day.</p>
+        <div class="compact-list content-grow">
+          <span>Unified hostel & school operations</span>
+          <span>Attendance & biometric</span>
+          <span>Fee collection & online payment</span>
+          <span>Document generation & uploading</span>
+          <span>Timely messaging — email, WhatsApp, alerts</span>
+          <span>Self-healing software & public website</span>
+          <span>Parent portal · Hostel management</span>
+          <span>Exams, leave, library, transport</span>
+          <span>Role-based access — 1,500+ permissions</span>
+          <span>Smart tasks — follow-ups & escalations</span>
         </div>
+        <div class="pending-note"><strong>Inventory module — pending.</strong> Stock management across store, kitchen, and hostel is planned. Not live yet. We report honestly to this Board.</div>
       </div>
       <span class="slide-num">08</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Documents</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Capabilities</span></footer>
     </section>
 
-    <!-- 9 MESSAGING -->
-    <section class="slide slide-accent" data-slide="9">
+    <!-- 9 STEWARDSHIP -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">Feature</span>
-        <h2>Timely message system</h2>
-        <div class="grid-3 content-grow">
-          <div class="feature-card">
-            <div class="icon">📧</div>
-            <h3>Email</h3>
-            <p>Automated emails to parents and staff — fee reminders, events, alerts.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">💬</div>
-            <h3>WhatsApp</h3>
-            <p>Reach parents on the channel they actually use. Announcements and fee alerts.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">🔔</div>
-            <h3>In-App Notifications</h3>
-            <p>Calendar events, task reminders, and portal alerts for staff and parents.</p>
-          </div>
-        </div>
-        <p class="lead" style="margin-top:16px;text-align:center">The goal is simple: <strong>the right message, to the right person, at the right time</strong> — not a day late on a paper notice board.</p>
-      </div>
-      <span class="slide-num">09</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Messaging</span></footer>
-    </section>
-
-    <!-- 10 SELF HEALING -->
-    <section class="slide slide-accent" data-slide="10">
-      <div class="slide-inner">
-        <span class="tag tag-gold">Feature</span>
-        <h2>Self-healing software & website</h2>
+        <span class="tag tag-gold">Stewardship</span>
+        <h2>What ownership means for trustees</h2>
         <div class="grid-2 content-grow">
           <div>
-            <p class="lead" style="margin-bottom:16px">Aethon doesn't just store data — it <strong>watches itself</strong>. When something breaks, the system detects it, alerts the right people, and recovers where it can.</p>
-            <ul class="clean">
-              <li>Automated maintenance tasks run on schedule</li>
-              <li>Critical errors trigger staff alerts — not silent failures</li>
-              <li>Staging environment — test before pushing to live site</li>
-              <li>Safe site promotion from staging to production</li>
-              <li>Public website (dnyanda.vss.ac) managed from the same platform</li>
+            <p class="lead" style="margin-bottom:16px">Aethon is not a subscription we can lose. It is <strong>infrastructure the Samiti owns</strong> — like a building or a bus, but digital.</p>
+            <ul style="list-style:none">
+              <li style="font-size:0.85rem;color:var(--ink-soft);padding:8px 0;border-bottom:1px solid var(--border)">✓ &nbsp;Student and institutional data on VSS servers</li>
+              <li style="font-size:0.85rem;color:var(--ink-soft);padding:8px 0;border-bottom:1px solid var(--border)">✓ &nbsp;No annual license to a vendor</li>
+              <li style="font-size:0.85rem;color:var(--ink-soft);padding:8px 0;border-bottom:1px solid var(--border)">✓ &nbsp;Custom workflows — no adapting to someone else's product</li>
+              <li style="font-size:0.85rem;color:var(--ink-soft);padding:8px 0">✓ &nbsp;Grows with the Samiti — new units, new needs, same platform</li>
             </ul>
           </div>
-          <div class="feature-card" style="background:#f0fdf4;border-color:#bbf7d0">
-            <h3 style="color:#047857">Why this matters</h3>
-            <p style="margin-top:8px">Commercial software breaks and you wait for vendor support. Aethon was built to <strong>detect and respond</strong> — because VSS cannot afford the portal going down during fee collection or admission season.</p>
+          <div class="box box-no" style="height:fit-content">
+            <h3>We are not trying to be something else</h3>
+            <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:8px">Commercial school software is built for private CBSE chains or generic government schools. <strong>We are a charitable trust running hostels and schools together.</strong> Aethon was the right decision because it was built for us — not because it won a feature comparison.</p>
           </div>
         </div>
       </div>
-      <span class="slide-num">10</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Self-Healing</span></footer>
+      <span class="slide-num">09</span>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Stewardship</span></footer>
     </section>
 
-    <!-- 11 AND MORE -->
-    <section class="slide slide-accent" data-slide="11">
+    <!-- 10 HONEST STATE -->
+    <section class="slide slide-accent">
       <div class="slide-inner">
-        <span class="tag tag-navy">And More</span>
-        <h2>Grown with the Samiti's needs</h2>
-        <div class="grid-3 content-grow">
-          <div class="feature-card"><div class="icon">👨‍👩‍👧</div><h3>Parent Portal</h3><p>558 parents — fees, calendar, student info in one login.</p></div>
-          <div class="feature-card"><div class="icon">🏠</div><h3>Hostel Management</h3><p>Warden roles, resident records, hostel-specific workflows.</p></div>
-          <div class="feature-card"><div class="icon">📚</div><h3>Library</h3><p>Book issue, return, member tracking.</p></div>
-          <div class="feature-card"><div class="icon">🚌</div><h3>Transport</h3><p>Routes, vehicles, student assignment.</p></div>
-          <div class="feature-card"><div class="icon">📝</div><h3>Exams & Results</h3><p>Exam planning, marks, report cards.</p></div>
-          <div class="feature-card"><div class="icon">🗓</div><h3>Leave & HR</h3><p>Staff leave applications and approvals.</p></div>
-          <div class="feature-card"><div class="icon">✅</div><h3>Smart Tasks</h3><p>Fee follow-ups, reminders, escalations to staff.</p></div>
-          <div class="feature-card"><div class="icon">🌐</div><h3>Public Website</h3><p>News, events, galleries — staff-managed CMS.</p></div>
-          <div class="feature-card"><div class="icon">🔐</div><h3>Role Permissions</h3><p>1,500+ controls — each role sees only what it should.</p></div>
+        <span class="tag tag-navy">Honest Report</span>
+        <h2>Where we stand today</h2>
+        <div class="honest-split content-grow">
+          <div class="box box-yes">
+            <h3 style="color:#047857;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase">Working & in daily use</h3>
+            <ul>
+              <li>All 6 units on one platform — 1,346 users</li>
+              <li>Fee collection, parent portal, attendance</li>
+              <li>Document generation & uploads</li>
+              <li>Messaging, tasks, leave, exams</li>
+              <li>Public website — dnyanda.vss.ac</li>
+              <li>Self-healing, staging, production workflow</li>
+            </ul>
+          </div>
+          <div class="box box-no">
+            <h3 style="color:var(--pending);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase">Pending & needs investment</h3>
+            <ul>
+              <li><strong>Inventory module</strong> — not started / not live</li>
+              <li>Mobile app refresh for parents & wardens</li>
+              <li>Email & WhatsApp reliability improvements</li>
+              <li>Ongoing stability & security hardening</li>
+            </ul>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--muted);margin-top:14px;text-align:center">The Board receives an honest picture — not a sales pitch.</p>
+      </div>
+      <span class="slide-num">10</span>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Honest Report</span></footer>
+    </section>
+
+    <!-- 11 ASK -->
+    <section class="slide slide-accent">
+      <div class="slide-inner">
+        <span class="tag tag-gold">Board Action</span>
+        <h2>What we are asking of trustees</h2>
+        <div class="grid-2 content-grow" style="gap:18px">
+          <div class="pillar">
+            <h3>Acknowledge Aethon as the Samiti's digital infrastructure</h3>
+            <p>Not a side project. Not an experiment. The platform through which VSS and Dnyanda operate daily.</p>
+          </div>
+          <div class="pillar">
+            <h3>Support continued investment</h3>
+            <p>Platform stability, security, and the inventory module as the next priority — with realistic timelines.</p>
+          </div>
+        </div>
+        <div class="ask-box">
+          <h3>Proposed understanding of the Board</h3>
+          <p>The Board recognises Aethon as a custom asset built for VSS Warora and Dnyanda, approves its continued development and maintenance, and prioritises the inventory module as the next major deliverable — reported back at a future meeting with honest progress.</p>
         </div>
       </div>
       <span class="slide-num">11</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>And More</span></footer>
+      <footer class="slide-footer"><strong>Aethon</strong><span>Board Action</span></footer>
     </section>
 
-    <!-- 12 WHAT WE ARE NOT -->
-    <section class="slide slide-accent" data-slide="12">
-      <div class="slide-inner">
-        <span class="tag tag-navy">Honest</span>
-        <h2>What we are — and what we are not</h2>
-        <div class="grid-2 content-grow" style="gap:20px">
-          <div class="honest-box" style="border-left-color:var(--success)">
-            <h3 style="margin-bottom:10px;color:var(--navy)">We are</h3>
-            <ul class="clean">
-              <li>A custom platform for VSS Warora and Dnyanda</li>
-              <li>Built around our hostel + school reality</li>
-              <li>Ours — data, code, and direction</li>
-              <li>Growing as our needs grow</li>
-            </ul>
-          </div>
-          <div class="not-box">
-            <h3>We are not ePrashashan</h3>
-            <p>And we are not trying to be. ePrashashan is a product built for generic Maharashtra schools. <strong>Aethon was built for us.</strong> We did not buy it off a shelf. We do not need to match their feature list or their brochure. We need software that runs our Samiti — and that is exactly what Aethon does.</p>
-          </div>
-        </div>
-      </div>
-      <span class="slide-num">12</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Honest Positioning</span></footer>
-    </section>
-
-    <!-- 13 QUOTE -->
-    <section class="slide slide-quote" data-slide="13">
-      <div class="slide-inner">
-        <blockquote>
-          "We didn't build Aethon to compete with anyone.<br>We built it because <em>nothing else fit.</em>"
-        </blockquote>
-      </div>
-      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span>Our Story</span></footer>
-    </section>
-
-    <!-- 14 LIVE TODAY -->
-    <section class="slide slide-accent" data-slide="14">
-      <div class="slide-inner">
-        <span class="tag tag-navy">Live Today</span>
-        <h2>On production — dnyanda.vss.ac</h2>
-        <div class="grid-4" style="margin-top:12px">
-          <div class="stat-card"><div class="num">664</div><div class="label">Students</div></div>
-          <div class="stat-card"><div class="num">1,346</div><div class="label">Users</div></div>
-          <div class="stat-card"><div class="num">558</div><div class="label">Parents</div></div>
-          <div class="stat-card"><div class="num">6</div><div class="label">Units</div></div>
-          <div class="stat-card"><div class="num">17</div><div class="label">Teachers</div></div>
-          <div class="stat-card"><div class="num">7</div><div class="label">Wardens</div></div>
-          <div class="stat-card"><div class="num">13</div><div class="label">Kitchen Staff</div></div>
-          <div class="stat-card"><div class="num">54</div><div class="label">Total Staff</div></div>
-        </div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-top:20px;text-align:center">Real numbers. Real people. One platform running every day.</p>
-      </div>
-      <span class="slide-num">14</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Live Production</span></footer>
-    </section>
-
-    <!-- 15 INVENTORY PENDING -->
-    <section class="slide slide-accent" data-slide="15">
-      <div class="slide-inner">
-        <span class="tag tag-pending">Upcoming</span>
-        <h2>Inventory module</h2>
-        <div class="content-grow" style="justify-content:center;gap:20px">
-          <div class="pending-card">
-            <h3>Pending development</h3>
-            <p>Stock management across school store, kitchen, and hostel — purchase, issue, and trustee-level visibility. Planned as the next major module. Not live yet.</p>
-          </div>
-          <p class="lead" style="text-align:center">We show what is real. Inventory is on the roadmap — it is not live today.</p>
-        </div>
-      </div>
-      <span class="slide-num">15</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Inventory — Pending</span></footer>
-    </section>
-
-    <!-- 16 ROADMAP -->
-    <section class="slide slide-accent" data-slide="16">
-      <div class="slide-inner">
-        <span class="tag tag-navy">Roadmap</span>
-        <h2>Where we are going</h2>
-        <div class="roadmap content-grow" style="justify-content:center">
-          <div class="roadmap-item"><span class="status-dot status-live"></span><span>Unified hostel & school platform</span><span class="status-label label-live">Live</span></div>
-          <div class="roadmap-item"><span class="status-dot status-live"></span><span>Attendance, fees, biometric, documents</span><span class="status-label label-live">Live</span></div>
-          <div class="roadmap-item"><span class="status-dot status-live"></span><span>Timely messaging — email, WhatsApp, alerts</span><span class="status-label label-live">Live</span></div>
-          <div class="roadmap-item"><span class="status-dot status-live"></span><span>Self-healing, staging, public website</span><span class="status-label label-live">Live</span></div>
-          <div class="roadmap-item"><span class="status-dot status-pending"></span><span><strong>Inventory module</strong> — store, kitchen, hostel stock</span><span class="status-label label-pending">Pending</span></div>
-          <div class="roadmap-item"><span class="status-dot status-pending"></span><span>Mobile app refresh for parents and wardens</span><span class="status-label label-pending">Planned</span></div>
-        </div>
-      </div>
-      <span class="slide-num">16</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Roadmap</span></footer>
-    </section>
-
-    <!-- 17 TRUSTEE VALUE -->
-    <section class="slide slide-accent" data-slide="17">
-      <div class="slide-inner">
-        <span class="tag tag-gold">For Trustees</span>
-        <h2>What this gives the Board</h2>
-        <div class="grid-3 content-grow">
-          <div class="feature-card"><h3>One view of the Samiti</h3><p>Students, fees, hostel, and staff across all units — not scattered files.</p></div>
-          <div class="feature-card"><h3>Built for us, owned by us</h3><p>No vendor lock-in. No annual license. The platform is an asset.</p></div>
-          <div class="feature-card"><h3>Grows with VSS</h3><p>New needs get built in — not bought as expensive add-ons.</p></div>
-          <div class="feature-card"><h3>Accountability</h3><p>Tasks, alerts, and audit trails — staff actions are recorded.</p></div>
-          <div class="feature-card"><h3>Parent connection</h3><p>558 families already on the portal. Fees and updates online.</p></div>
-          <div class="feature-card"><h3>Honest roadmap</h3><p>We know what is live and what is pending. No false claims.</p></div>
-        </div>
-      </div>
-      <span class="slide-num">17</span>
-      <footer class="slide-footer"><strong>Aethon</strong><span>Trustee Value</span></footer>
-    </section>
-
-    <!-- 18 CLOSE -->
-    <section class="slide slide-title" data-slide="18">
+    <!-- 12 CLOSE -->
+    <section class="slide slide-title">
       <div class="slide-inner" style="align-items:center;text-align:center">
-        <span class="tag tag-gold">Thank You</span>
-        <h1 style="font-size:2.6rem">Aethon</h1>
+        <h1 style="font-size:2.4rem">Questions &<br>Discussion</h1>
         <div class="gold-bar" style="margin:20px auto"></div>
-        <p class="subtitle">Custom-built for VSS Warora & Dnyanda.<br>Not a product. <em style="color:var(--gold-light)">Ours.</em></p>
-        <p class="meta" style="margin-top:36px">dnyanda.vss.ac · Questions & discussion</p>
+        <p class="subtitle">Aethon · Built for VSS Warora & Dnyanda<br>dnyanda.vss.ac</p>
+        <p class="meta" style="margin-top:32px">Vidyarthi Sahayyak Samiti Warora · 2026</p>
       </div>
-      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span>2026</span></footer>
+      <footer class="slide-footer"><strong>VSS · Dnyanda</strong><span>Trustee Meeting</span></footer>
     </section>
 
   </main>
@@ -681,30 +400,22 @@
     const slides = [...document.querySelectorAll('.slide')];
     const counter = document.getElementById('counter');
     let current = 0;
-
     function goTo(i) {
       current = Math.max(0, Math.min(i, slides.length - 1));
       slides[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
       counter.textContent = `${current + 1} / ${slides.length}`;
     }
-
     document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
     document.getElementById('next').addEventListener('click', () => goTo(current + 1));
-
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
     });
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          current = slides.indexOf(entry.target);
-          counter.textContent = `${current + 1} / ${slides.length}`;
-        }
-      });
-    }, { threshold: 0.55 });
-    slides.forEach((s) => observer.observe(s));
+    new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { current = slides.indexOf(e.target); counter.textContent = `${current + 1} / ${slides.length}`; }});
+    }, { threshold: 0.55 }).observe && slides.forEach(s => new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { current = slides.indexOf(e.target); counter.textContent = `${current + 1} / ${slides.length}`; }});
+    }, { threshold: 0.55 }).observe(s));
   </script>
 </body>
 </html>

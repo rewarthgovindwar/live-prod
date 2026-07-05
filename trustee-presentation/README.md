@@ -1,23 +1,24 @@
-# VSS & Dnyanda Trustee Presentation — Aethon 2026
+# VSS Trustee Presentation 2026
 
-## Open
+**Not a feature demo.** A board presentation on digital stewardship of the Samiti.
 
-Open `index.html` in Chrome.
+## Open & export
 
-## Save as PDF
+1. Open `index.html` in Chrome
+2. Arrow keys to navigate
+3. **↓ PDF** → Landscape, no margins, background graphics on → 12 pages
 
-1. Click **↓ Save as PDF** (or Ctrl+P)
-2. Layout: **Landscape**
-3. Margins: **None**
-4. Enable **Background graphics**
-5. Save — 18 pages
+## Slide arc
 
-## What changed
-
-Authentic positioning — Aethon as a **custom platform for VSS Warora & Dnyanda**, not a competitor to ePrashashan.
-
-- Removed competitive comparison tables and "best ERP" claims
-- Added explicit "We are not ePrashashan" slide
-- Core needs: unified hostel/schools, attendance, fees, biometric, documents, messaging, self-healing, uploads
-- Inventory marked **pending** — not live
-- No government auto-sync in roadmap
+1. Title — Digital Stewardship of the Samiti
+2. Why this is before the Board
+3. The organisation we govern
+4. The problem (before vs what we needed)
+5. We built Aethon
+6. Quote
+7. What has changed (impact)
+8. Capabilities — one slide, brief
+9. Stewardship & ownership
+10. Honest report — working vs pending
+11. What we ask of trustees
+12. Q&A
