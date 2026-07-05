@@ -1,29 +1,23 @@
-# VSS Trustee Presentation — Aethon ERP 2026
+# VSS & Dnyanda Trustee Presentation — Aethon 2026
 
-## View in browser
+## Open
 
-Open `index.html` in Chrome or Edge (double-click or drag into browser).
-
-## Navigate
-
-- **Arrow keys** or **Space** — next slide
-- **←** — previous slide
-- Toolbar buttons — Prev / Next
+Open `index.html` in Chrome.
 
 ## Save as PDF
 
-1. Open `index.html` in **Chrome**
-2. Click **↓ Save as PDF** (or `Ctrl+P` / `Cmd+P`)
-3. Destination: **Save as PDF**
-4. Layout: **Landscape**
-5. Margins: **None**
-6. Enable **Background graphics**
-7. Save
+1. Click **↓ Save as PDF** (or Ctrl+P)
+2. Layout: **Landscape**
+3. Margins: **None**
+4. Enable **Background graphics**
+5. Save — 18 pages
 
-Each slide prints as one landscape page (23 pages total).
+## What changed
 
-## Contents
+Authentic positioning — Aethon as a **custom platform for VSS Warora & Dnyanda**, not a competitor to ePrashashan.
 
-- 23 slides: platform overview, modules, competitive positioning, roadmap
-- Inventory module marked **Completely Pending**
-- Government auto-sync **not** listed in roadmap
+- Removed competitive comparison tables and "best ERP" claims
+- Added explicit "We are not ePrashashan" slide
+- Core needs: unified hostel/schools, attendance, fees, biometric, documents, messaging, self-healing, uploads
+- Inventory marked **pending** — not live
+- No government auto-sync in roadmap
