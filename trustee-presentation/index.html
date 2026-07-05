@@ -82,6 +82,20 @@
     opacity: 0; transform: translateX(-40px) scale(0.97);
     z-index: 1;
   }
+  .slide.exit-right {
+    opacity: 0; transform: translateX(40px) scale(0.97);
+    z-index: 1;
+  }
+  .slide.enter-left {
+    opacity: 0; visibility: visible;
+    transform: translateX(-40px) scale(0.97);
+    z-index: 1;
+  }
+  .slide.enter-right {
+    opacity: 0; visibility: visible;
+    transform: translateX(40px) scale(0.97);
+    z-index: 1;
+  }
 
   .slide-head {
     flex-shrink: 0; background: var(--sidebar_bg);
@@ -194,7 +208,8 @@
   @keyframes flowGlow { 0%,100% { border-color: var(--border_color); } 50% { border-color: var(--gradient_1); box-shadow: 0 0 10px rgba(16,185,129,0.3); } }
   @keyframes countPop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
 
-  .slide.active .anim { animation: fadeUp 0.5s ease forwards; opacity: 0; }
+  .slide.active .anim { animation: fadeUp 0.5s ease both; }
+  .slide.active.run-anim .anim { animation: fadeUp 0.5s ease both; }
   .slide.active .anim-d1 { animation-delay: 0.06s; }
   .slide.active .anim-d2 { animation-delay: 0.12s; }
   .slide.active .anim-d3 { animation-delay: 0.18s; }
@@ -203,8 +218,8 @@
   .slide.active .anim-d6 { animation-delay: 0.36s; }
   .slide.active .anim-d7 { animation-delay: 0.42s; }
   .slide.active .anim-d8 { animation-delay: 0.48s; }
-  .slide.active .logo { animation: fadeIn 0.7s ease forwards; }
-  .slide.active .stat .n { animation: countPop 0.6s cubic-bezier(0.22,1,0.36,1) forwards; opacity: 0; }
+  .slide.active.run-anim .logo { animation: fadeIn 0.7s ease both; }
+  .slide.active.run-anim .stat .n { animation: countPop 0.6s cubic-bezier(0.22,1,0.36,1) both; }
   .slide.active .stat:nth-child(1) .n { animation-delay: 0.15s; }
   .slide.active .stat:nth-child(2) .n { animation-delay: 0.25s; }
   .slide.active .stat:nth-child(3) .n { animation-delay: 0.35s; }
@@ -367,11 +382,11 @@
     <span>VSS · Dnyanda · Aethon</span>
     <div class="hud-actions">
       <span class="slide-counter" id="counter">1 / 7</span>
-      <button class="btn-ghost" id="btnPrev" title="Previous (←)">←</button>
-      <button class="btn-ghost" id="btnNext" title="Next (→)">→</button>
-      <button class="btn-ghost" id="btnOverview" title="Overview (O)">⊞</button>
-      <button class="btn-ghost" id="btnHelp" title="Help (?)">?</button>
-      <button class="btn-go" id="btnFs" title="Fullscreen (F)">⛶ Fullscreen</button>
+      <button class="btn-ghost" id="btnPrev" type="button" title="Previous (←)">←</button>
+      <button class="btn-ghost" id="btnNext" type="button" title="Next (→)">→</button>
+      <button class="btn-ghost" id="btnOverview" type="button" title="Overview (O)">⊞</button>
+      <button class="btn-ghost" id="btnHelp" type="button" title="Help (?)">?</button>
+      <button class="btn-go" id="btnFs" type="button" title="Fullscreen (F)">⛶ Fullscreen</button>
     </div>
   </nav>
 
@@ -517,7 +532,7 @@
   slides.forEach((s, i) => {
     const dot = document.createElement('button');
     dot.title = s.dataset.title;
-    dot.onclick = () => { closeOverview(); goTo(i); };
+    dot.onclick = () => { closeOverview(); goTo(i, i > current ? 1 : -1); };
     progressDots.appendChild(dot);
 
     const thumb = document.createElement('button');
@@ -543,32 +558,54 @@
     });
   }
 
-  function resetAnims(slide) {
-    slide.querySelectorAll('.anim').forEach(el => {
+  function playAnimations(slide) {
+    slide.classList.remove('run-anim');
+    slide.querySelectorAll('.anim, .logo, .stat .n').forEach(el => {
       el.style.animation = 'none';
-      el.offsetHeight;
+      el.style.opacity = '';
+      void el.offsetHeight;
       el.style.animation = '';
     });
+    void slide.offsetHeight;
+    slide.classList.add('run-anim');
   }
 
-  function goTo(i, dir = 1) {
-    if (i < 0 || i >= slides.length || i === current) return;
-    const prev = slides[current];
-    const next = slides[i];
-
-    prev.classList.remove('active');
-    prev.classList.add(dir > 0 ? 'exit-left' : '');
-    setTimeout(() => prev.classList.remove('exit-left'), 450);
-
-    next.classList.add('active');
-    resetAnims(next);
-    if (next.querySelector('[data-count]')) animateCounters(next);
-
-    current = i;
+  function updateUI() {
     counter.textContent = `${current + 1} / ${slides.length}`;
     progressFill.style.width = `${((current + 1) / slides.length) * 100}%`;
     progressDots.querySelectorAll('button').forEach((d, j) => d.classList.toggle('active', j === current));
     overview.querySelectorAll('.overview-thumb').forEach((t, j) => t.classList.toggle('current', j === current));
+  }
+
+  function goTo(i, dir = 1) {
+    if (i < 0 || i >= slides.length || i === current) return;
+
+    const outgoing = slides[current];
+    const incoming = slides[i];
+
+    // Clear all transition states
+    slides.forEach(s => s.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right', 'run-anim'));
+
+    // Outgoing animation
+    outgoing.classList.remove('active');
+    outgoing.classList.add(dir > 0 ? 'exit-left' : 'exit-right');
+
+    // Incoming: start from correct side, then activate
+    incoming.classList.add(dir > 0 ? 'enter-right' : 'enter-left');
+
+    requestAnimationFrame(() => {
+      incoming.classList.remove('enter-left', 'enter-right');
+      incoming.classList.add('active');
+      playAnimations(incoming);
+      if (incoming.querySelector('[data-count]')) animateCounters(incoming);
+    });
+
+    setTimeout(() => {
+      outgoing.classList.remove('exit-left', 'exit-right');
+    }, 480);
+
+    current = i;
+    updateUI();
   }
 
   function next() { goTo(current + 1, 1); }
@@ -591,8 +628,8 @@
     if (started) return;
     started = true;
     splash.classList.add('hide');
-    progressFill.style.width = `${(1 / slides.length) * 100}%`;
-    progressDots.querySelectorAll('button')[0]?.classList.add('active');
+    playAnimations(slides[0]);
+    updateUI();
     showHud();
   }
 
