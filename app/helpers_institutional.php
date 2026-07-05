@@ -47,3 +47,15 @@ if (! function_exists('gv')) {
         return data_get($array, $key, $default);
     }
 }
+
+if (! function_exists('asset_path')) {
+    /** Filesystem path under public/ for uploads (PWA icons, splash screens, etc.). */
+    function asset_path(?string $path = null): string
+    {
+        if ($path === null || $path === '') {
+            return 'public';
+        }
+
+        return 'public/'.ltrim($path, '/');
+    }
+}
