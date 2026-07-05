@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aethon — VSS & Dnyanda · July 2026</title>
+  <title>Aethon — VSS & Dnyanda</title>
   <link rel="icon" href="https://dnyanda.vss.ac/public/uploads/settings/0ac173ee0972040150ba2985e71e9c5c.png" type="image/png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-  /* Site theme — matches dnyanda.vss.ac :root */
   :root {
     --base_font: Poppins, sans-serif;
     --base_color: #0e4d38;
@@ -20,225 +17,216 @@
     --text-color: #64748b;
     --text_white: #ffffff;
     --bg_white: #f7faf9;
-    --text_black: #000000;
     --border_color: #d8ede5;
-    --success: #34d399;
-    --warning: #f59e0b;
-    --danger: #ef4444;
     --title_color: #0e4d38;
     --sidebar_bg: #071912;
     --primary-color: #059669;
     --sidebar-section: #3d6e58;
-    --link-hover: #065f46;
     --notification_title: #08120d;
     --slide-w: 1280px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-
-  body {
-    font-family: var(--base_font);
-    background: #e8f0ec;
-    color: var(--text-color);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { font-family: var(--base_font); background: #e8f0ec; color: var(--text-color); line-height: 1.45; }
 
   .toolbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 20px;
-    background: var(--sidebar_bg);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 8px 18px; background: var(--sidebar_bg);
   }
-  .toolbar span { color: var(--sidebar-section); font-size: 0.78rem; font-weight: 500; }
-  .toolbar-actions { display: flex; gap: 8px; align-items: center; }
-  .toolbar button {
-    font-family: var(--base_font); font-size: 0.78rem; font-weight: 600;
-    padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer;
-  }
-  .btn-pdf {
-    background: linear-gradient(90deg, var(--gradient_1), var(--gradient_2));
-    color: var(--text_white);
-  }
+  .toolbar span { color: var(--sidebar-section); font-size: 0.72rem; font-weight: 500; }
+  .toolbar-actions { display: flex; gap: 6px; align-items: center; }
+  .toolbar button { font-family: var(--base_font); font-size: 0.72rem; font-weight: 600; padding: 6px 12px; border-radius: 5px; border: none; cursor: pointer; }
+  .btn-pdf { background: linear-gradient(90deg, var(--gradient_1), var(--gradient_2)); color: white; }
   .btn-nav { background: rgba(255,255,255,0.08); color: #7ea896; }
-  .slide-counter { color: #7ea896; font-size: 0.75rem; min-width: 56px; text-align: center; }
+  .slide-counter { color: #7ea896; font-size: 0.7rem; min-width: 50px; text-align: center; }
 
-  .deck {
-    padding: 64px 20px 40px;
-    display: flex; flex-direction: column; align-items: center; gap: 28px;
-  }
+  .deck { padding: 52px 16px 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 
   .slide {
     width: min(var(--slide-w), 100%);
     aspect-ratio: 16 / 9;
+    max-height: calc(100vh - 80px);
     background: var(--bg_white);
     border-radius: 8px;
     border: 1px solid var(--border_color);
     overflow: hidden;
     display: flex; flex-direction: column;
-    scroll-margin-top: 64px;
+    scroll-margin-top: 52px;
     box-shadow: 0 2px 12px rgba(14, 77, 56, 0.06);
   }
 
   .slide-head {
+    flex-shrink: 0;
     background: var(--sidebar_bg);
-    padding: 14px 40px;
+    padding: 10px 32px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .slide-head .phase {
-    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--gradient_1);
-  }
-  .slide-head .logo-sm { height: 28px; }
-  .slide-head .date { font-size: 0.68rem; color: var(--sidebar-section); }
+  .slide-head .phase { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gradient_1); }
+  .slide-head .logo-sm { height: 24px; }
+  .slide-head .date { font-size: 0.62rem; color: var(--sidebar-section); }
 
   .slide-body {
-    flex: 1; padding: 36px 44px 32px;
+    flex: 1; min-height: 0;
+    padding: 22px 32px 18px;
     display: flex; flex-direction: column;
+    overflow: hidden;
   }
 
   .slide-foot {
-    padding: 10px 40px;
+    flex-shrink: 0;
+    padding: 7px 32px;
     border-top: 1px solid var(--border_color);
-    font-size: 0.65rem; color: var(--scroll_color);
+    font-size: 0.6rem; color: var(--scroll_color);
     display: flex; justify-content: space-between;
   }
 
-  h1 {
-    font-size: 1.85rem; font-weight: 700;
-    color: var(--title_color); line-height: 1.25;
-  }
-  h2 {
-    font-size: 1.45rem; font-weight: 700;
-    color: var(--title_color); margin-bottom: 6px;
-  }
-  .sub { font-size: 0.92rem; color: var(--text-color); margin-top: 6px; }
-  .grow { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  h1 { font-size: 1.65rem; font-weight: 700; color: var(--title_color); line-height: 1.2; }
+  h2 { font-size: 1.2rem; font-weight: 700; color: var(--title_color); margin-bottom: 4px; }
+  .sub { font-size: 0.78rem; color: var(--text-color); margin-top: 4px; }
 
-  /* Cover */
-  .slide-cover .slide-body {
-    align-items: center; text-align: center; justify-content: center;
-  }
-  .slide-cover .logo { max-height: 64px; margin-bottom: 24px; }
-  .slide-cover h1 { font-size: 2rem; }
-  .slide-cover .meeting-note {
-    margin-top: 20px; font-size: 0.85rem; color: var(--scroll_color);
-    max-width: 520px;
-  }
+  .slide-cover .slide-body { align-items: center; text-align: center; justify-content: center; }
+  .slide-cover .logo { max-height: 52px; margin-bottom: 16px; }
+  .slide-cover h1 { font-size: 1.75rem; }
+  .slide-cover .meeting-note { margin-top: 12px; font-size: 0.78rem; color: var(--scroll_color); max-width: 460px; }
   .phase-pill {
-    display: inline-block; margin-top: 16px;
-    padding: 6px 16px; border-radius: 4px;
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--gradient_3); font-size: 0.72rem; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase;
+    display: inline-block; margin-top: 12px; padding: 5px 14px; border-radius: 4px;
+    background: rgba(16, 185, 129, 0.12); color: var(--gradient_3);
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   }
 
-  /* Lists */
-  ul.plain { list-style: none; }
-  ul.plain li {
-    font-size: 0.88rem; color: var(--notification_title);
-    padding: 7px 0 7px 18px; position: relative;
-    border-bottom: 1px solid var(--border_color);
-  }
-  ul.plain li:last-child { border-bottom: none; }
-  ul.plain li::before {
-    content: ''; position: absolute; left: 0; top: 14px;
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--primary-color);
-  }
-
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .fill { flex: 1; min-height: 0; }
 
   .card {
-    background: var(--text_white);
-    border: 1px solid var(--border_color);
-    border-radius: 6px;
-    padding: 16px 18px;
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 6px; padding: 11px 13px;
   }
-  .card h3 {
-    font-size: 0.78rem; font-weight: 700; color: var(--title_color);
-    margin-bottom: 8px;
+  .card h3 { font-size: 0.68rem; font-weight: 700; color: var(--title_color); margin-bottom: 5px; }
+  .card p { font-size: 0.7rem; color: var(--text-color); line-height: 1.4; }
+
+  ul.compact { list-style: none; }
+  ul.compact li {
+    font-size: 0.7rem; color: var(--notification_title);
+    padding: 4px 0 4px 12px; position: relative;
+    border-bottom: 1px solid var(--border_color);
+    line-height: 1.35;
   }
-  .card p, .card li { font-size: 0.8rem; color: var(--text-color); }
+  ul.compact li:last-child { border-bottom: none; }
+  ul.compact li::before {
+    content: ''; position: absolute; left: 0; top: 9px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--primary-color);
+  }
 
   .stat {
-    background: var(--text_white);
-    border: 1px solid var(--border_color);
-    border-radius: 6px;
-    padding: 14px; text-align: center;
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 6px; padding: 8px; text-align: center;
   }
-  .stat .n { font-size: 1.6rem; font-weight: 700; color: var(--title_color); }
-  .stat .l { font-size: 0.62rem; font-weight: 600; color: var(--scroll_color); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .stat .n { font-size: 1.25rem; font-weight: 700; color: var(--title_color); }
+  .stat .l { font-size: 0.55rem; font-weight: 600; color: var(--scroll_color); text-transform: uppercase; letter-spacing: 0.04em; }
 
-  .status-ok { color: var(--gradient_3); font-weight: 600; }
-  .status-pending { color: var(--warning); font-weight: 600; }
-  .status-wip { color: #2563eb; font-weight: 600; }
+  .status-live { color: var(--gradient_3); }
+  .status-wip { color: #2563eb; }
+
+  .wip-badge {
+    display: inline-block; font-size: 0.55rem; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+    background: rgba(37, 99, 235, 0.1); color: #2563eb;
+    vertical-align: middle;
+  }
 
   .highlight-box {
     background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.04));
-    border: 1px solid var(--border_color);
-    border-left: 4px solid var(--primary-color);
-    border-radius: 6px; padding: 18px 22px;
+    border: 1px solid var(--border_color); border-left: 3px solid var(--primary-color);
+    border-radius: 6px; padding: 12px 16px;
   }
-  .highlight-box p { font-size: 0.92rem; color: var(--title_color); line-height: 1.65; }
-  .highlight-box strong { color: var(--base_color); }
+  .highlight-box p { font-size: 0.78rem; color: var(--title_color); line-height: 1.5; }
 
-  .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .flow { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: nowrap; margin-top: 10px; }
   .flow-step {
-    background: var(--text_white); border: 1px solid var(--border_color);
-    border-radius: 6px; padding: 10px 14px; font-size: 0.78rem;
-    color: var(--notification_title); font-weight: 600;
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 5px; padding: 7px 10px; font-size: 0.65rem;
+    color: var(--notification_title); font-weight: 600; white-space: nowrap;
   }
-  .flow-arrow { color: var(--scroll_color); font-size: 0.9rem; }
-  .wip-badge {
-    display: inline-block; font-size: 0.62rem; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 3px 8px; border-radius: 4px;
-    background: rgba(37, 99, 235, 0.1); color: #2563eb; margin-left: 8px;
+  .flow-arrow { color: var(--gradient_1); font-size: 0.85rem; font-weight: 700; }
+
+  .wip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wip-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 5px; padding: 8px 10px;
+  }
+  .wip-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #2563eb;
+    margin-top: 4px; flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .wip-item strong { display: block; font-size: 0.68rem; color: var(--title_color); }
+  .wip-item span { font-size: 0.62rem; color: var(--text-color); line-height: 1.3; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(37,99,235,0); }
+  }
+  @keyframes flowGlow {
+    0%, 100% { border-color: var(--border_color); }
+    50% { border-color: var(--gradient_1); box-shadow: 0 0 8px rgba(16,185,129,0.25); }
+  }
+  @keyframes slideBar {
+    from { width: 0; }
+    to { width: 100%; }
   }
 
-  .goal-item {
-    display: flex; gap: 14px; align-items: flex-start;
-    padding: 12px 0; border-bottom: 1px solid var(--border_color);
-  }
-  .goal-item:last-child { border-bottom: none; }
-  .goal-num {
-    flex-shrink: 0; width: 28px; height: 28px;
-    background: linear-gradient(135deg, var(--gradient_1), var(--gradient_2));
-    color: white; border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 700;
-  }
-  .goal-item strong { display: block; font-size: 0.88rem; color: var(--title_color); margin-bottom: 2px; }
-  .goal-item span { font-size: 0.8rem; color: var(--text-color); }
+  .slide .anim { opacity: 0; }
+  .slide.active .anim { animation: fadeUp 0.5s ease forwards; }
+  .slide.active .anim-d1 { animation-delay: 0.08s; }
+  .slide.active .anim-d2 { animation-delay: 0.16s; }
+  .slide.active .anim-d3 { animation-delay: 0.24s; }
+  .slide.active .anim-d4 { animation-delay: 0.32s; }
+  .slide.active .anim-d5 { animation-delay: 0.4s; }
+  .slide.active .anim-d6 { animation-delay: 0.48s; }
+  .slide.active .anim-d7 { animation-delay: 0.56s; }
+  .slide.active .anim-d8 { animation-delay: 0.64s; }
 
-  .note {
-    margin-top: 14px; padding: 12px 16px;
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.25);
-    border-radius: 6px; font-size: 0.8rem; color: #92400e;
+  .slide.active .flow-step { animation: flowGlow 2.5s ease-in-out infinite; }
+  .slide.active .flow-step:nth-child(1) { animation-delay: 0s; }
+  .slide.active .flow-step:nth-child(3) { animation-delay: 0.4s; }
+  .slide.active .flow-step:nth-child(5) { animation-delay: 0.8s; }
+  .slide.active .flow-step:nth-child(7) { animation-delay: 1.2s; }
+
+  .slide.active .logo { animation: fadeIn 0.8s ease forwards; }
+  .slide.active .phase-pill { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+
+  .progress-bar {
+    height: 3px; background: var(--border_color); border-radius: 2px; margin-top: 8px; overflow: hidden;
   }
+  .progress-bar span {
+    display: block; height: 100%; background: linear-gradient(90deg, var(--gradient_1), var(--gradient_2));
+    border-radius: 2px; width: 0;
+  }
+  .slide.active .progress-bar span { animation: slideBar 1.2s ease 0.4s forwards; }
 
   @media print {
     @page { size: landscape; margin: 0; }
-    body { background: white; }
     .toolbar { display: none !important; }
     .deck { padding: 0; gap: 0; }
-    .slide {
-      width: 100%; aspect-ratio: unset; height: 100vh;
-      border-radius: 0; border: none; box-shadow: none;
-      page-break-after: always;
-    }
-    .slide:last-child { page-break-after: auto; }
+    .slide { width: 100%; max-height: none; height: 100vh; border-radius: 0; page-break-after: always; }
+    .anim, .flow-step, .phase-pill { opacity: 1 !important; animation: none !important; transform: none !important; }
+    .progress-bar span { width: 70% !important; }
   }
   @media (max-width: 800px) {
-    .slide-body { padding: 24px; }
-    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    .toolbar-actions .btn-nav { display: none; }
+    .grid-2, .grid-3, .grid-4, .wip-grid { grid-template-columns: 1fr; }
+    .slide-body { padding: 16px; }
   }
   </style>
 </head>
@@ -247,245 +235,167 @@
   <nav class="toolbar">
     <span>VSS · Dnyanda · Aethon</span>
     <div class="toolbar-actions">
-      <span class="slide-counter" id="counter">1 / 8</span>
-      <button class="btn-nav" id="prev" type="button">←</button>
-      <button class="btn-nav" id="next" type="button">→</button>
-      <button class="btn-pdf" type="button" onclick="window.print()">Save PDF</button>
+      <span class="slide-counter" id="counter">1 / 7</span>
+      <button class="btn-nav" id="prev">←</button>
+      <button class="btn-nav" id="next">→</button>
+      <button class="btn-pdf" onclick="window.print()">PDF</button>
     </div>
   </nav>
 
   <main class="deck">
 
-    <!-- 1 COVER -->
-    <section class="slide slide-cover">
+    <!-- 1 -->
+    <section class="slide slide-cover active">
       <div class="slide-head">
-        <span class="phase">Meeting · July 2026</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="VSS" />
+        <span class="phase">July 2026</span>
+        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
         <span class="date">dnyanda.vss.ac</span>
       </div>
       <div class="slide-body">
-        <img class="logo" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="Vidyarthi Sahayyak Samiti Warora" />
-        <h1>Aethon Platform Update</h1>
-        <p class="sub">VSS Warora & Dnyanda</p>
-        <p class="meeting-note">Discussion on where we are today and what we plan for the next month.</p>
-        <span class="phase-pill">Need → Progress → Goal</span>
+        <img class="logo anim" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="VSS" />
+        <h1 class="anim anim-d1">Aethon Platform Update</h1>
+        <p class="sub anim anim-d2">VSS Warora & Dnyanda</p>
+        <p class="meeting-note anim anim-d3">Where we are · What we are building · Where we are going</p>
+        <span class="phase-pill">Need → Progress → Vision</span>
       </div>
-      <div class="slide-foot"><span>Vidyarthi Sahayyak Samiti Warora</span><span>July 2026</span></div>
+      <div class="slide-foot"><span>Vidyarthi Sahayyak Samiti Warora</span><span>1 / 7</span></div>
     </section>
 
     <!-- 2 NEED -->
     <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Need</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">Why we built Aethon</span>
-      </div>
+      <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Why Aethon exists</span></div>
       <div class="slide-body">
-        <h2>The need</h2>
-        <p class="sub" style="margin-bottom:18px">A custom platform for VSS and Dnyanda — designed around how we actually work.</p>
-        <div class="grid-2 grow">
-          <div class="card">
+        <h2 class="anim">The need</h2>
+        <p class="sub anim anim-d1" style="margin-bottom:10px">Custom platform for VSS & Dnyanda — built around how we work.</p>
+        <div class="grid-2 fill">
+          <div class="card anim anim-d2">
             <h3>The situation</h3>
-            <ul class="plain">
-              <li>One Samiti running schools and hostels together</li>
-              <li>6 units — not one building, not one process</li>
-              <li>Paper registers, manual fees, delayed parent communication</li>
-              <li>No off-the-shelf software fit our model</li>
+            <ul class="compact">
+              <li>One Samiti — schools and hostels together</li>
+              <li>6 units, not one building</li>
+              <li>Paper, manual fees, delayed messages</li>
+              <li>Nothing off-the-shelf fit us</li>
             </ul>
           </div>
-          <div class="card">
+          <div class="card anim anim-d3">
             <h3>What we needed</h3>
-            <ul class="plain">
-              <li>Unified system for hostel and schools</li>
-              <li>Attendance and biometric</li>
+            <ul class="compact">
+              <li>Unified hostel & schools</li>
+              <li>Attendance & biometric</li>
               <li>Fee collection</li>
-              <li>Document generation and uploading</li>
-              <li>Timely message system</li>
-              <li>Self-healing software and website</li>
-              <li>And more — as the Samiti grew</li>
+              <li>Document generation & upload</li>
+              <li>Timely messaging</li>
+              <li>Self-healing software</li>
             </ul>
           </div>
         </div>
       </div>
-      <div class="slide-foot"><span>Need</span><span>2 / 8</span></div>
+      <div class="slide-foot"><span>Need</span><span>2 / 7</span></div>
     </section>
 
-    <!-- 3 NEED - who we are -->
+    <!-- 3 WHAT IT IS -->
     <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Need</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">What Aethon is</span>
-      </div>
-      <div class="slide-body grow">
-        <h2>Not a product we bought. Ours.</h2>
-        <p class="sub" style="margin-bottom:20px;max-width:680px">Aethon is custom-developed for VSS Warora and Dnyanda. It runs on our servers. Our data stays with us. We are not ePrashashan — and we are not trying to be.</p>
+      <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">What Aethon is</span></div>
+      <div class="slide-body fill" style="justify-content:center">
+        <h2 class="anim">Not bought. Built. Ours.</h2>
+        <p class="sub anim anim-d1" style="margin-bottom:12px;max-width:600px">Custom-developed for VSS & Dnyanda. Our servers. Our data. Not ePrashashan — not trying to be.</p>
         <div class="grid-3">
-          <div class="card"><h3>6 units, one system</h3><p>School, junior college, and four hostels under one platform.</p></div>
-          <div class="card"><h3>Our workflows</h3><p>Fees, hostel, parents, staff — built how we operate.</p></div>
-          <div class="card"><h3>No limits</h3><p>It grows as the organisation grows. New units, new needs — the platform expands with us.</p></div>
+          <div class="card anim anim-d2"><h3>6 units, one system</h3><p>School, college, four hostels.</p></div>
+          <div class="card anim anim-d3"><h3>Our workflows</h3><p>Fees, hostel, parents, staff.</p></div>
+          <div class="card anim anim-d4"><h3>No limits</h3><p>Grows as the organisation grows.</p></div>
         </div>
       </div>
       <div class="slide-foot"><span>Need</span><span>3 / 7</span></div>
     </section>
 
-    <!-- 4 PROGRESS -->
+    <!-- 4 LIVE -->
     <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Progress</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">Where we are today</span>
-      </div>
+      <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Live today</span></div>
       <div class="slide-body">
-        <h2>Progress — live on dnyanda.vss.ac</h2>
-        <div class="grid-4" style="margin:16px 0 20px">
+        <h2 class="anim">Progress — live on dnyanda.vss.ac</h2>
+        <div class="grid-4 anim anim-d1" style="margin:8px 0 10px">
           <div class="stat"><div class="n">664</div><div class="l">Students</div></div>
           <div class="stat"><div class="n">1,346</div><div class="l">Users</div></div>
           <div class="stat"><div class="n">558</div><div class="l">Parents</div></div>
           <div class="stat"><div class="n">6</div><div class="l">Units</div></div>
         </div>
-        <div class="grid-2 grow">
-          <ul class="plain">
-            <li>Unified hostel and school operations</li>
-            <li>Attendance and biometric</li>
-            <li>Fee collection — 971 installments tracked, Razorpay live</li>
-            <li>Document generation and uploads</li>
-            <li>Email, WhatsApp, and portal messaging</li>
+        <div class="grid-2 fill">
+          <ul class="compact anim anim-d2">
+            <li>Unified hostel & school operations</li>
+            <li>Attendance & biometric</li>
+            <li>Fee collection — 971 installments, Razorpay</li>
+            <li>Documents — generate & upload</li>
+            <li>Parent portal — 558 families</li>
           </ul>
-          <ul class="plain">
-            <li>Parent portal — 558 families registered</li>
-            <li>Public website from same platform</li>
-            <li>Exams, leave, library, transport, tasks</li>
-            <li>Role-based access — 1,500+ permissions</li>
+          <ul class="compact anim anim-d3">
+            <li>Email, WhatsApp, portal messaging</li>
+            <li>Exams, leave, library, transport</li>
+            <li>Public website — same platform</li>
+            <li>Tasks, roles — 1,500+ permissions</li>
+            <li>Daily operations across all units</li>
           </ul>
         </div>
+        <div class="progress-bar anim anim-d4"><span></span></div>
       </div>
       <div class="slide-foot"><span>Progress</span><span>4 / 7</span></div>
     </section>
 
-    <!-- 5 PROGRESS - honest -->
+    <!-- 5 ALL WIP -->
     <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Progress</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">Honest status</span>
-      </div>
-      <div class="slide-body grow">
-        <h2>What is working · What is in progress · What is pending</h2>
-        <div class="grid-3" style="margin-top:14px">
-          <div class="card">
-            <h3 class="status-ok">Working</h3>
-            <ul class="plain">
-              <li>Daily operations across all 6 units</li>
-              <li>Fees, parents, attendance, documents</li>
-              <li>Hostel management and staff roles</li>
-              <li>Messaging and task follow-ups</li>
-              <li>Website and staging workflow</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3 class="status-wip">Work in progress</h3>
-            <ul class="plain">
-              <li><strong>Self-healing</strong> — AI error detection and auto-fix (see next slide)</li>
-              <li>Email and WhatsApp reliability</li>
-              <li>Ongoing stability and security</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3 class="status-pending">Pending</h3>
-            <ul class="plain">
-              <li><strong>Inventory module</strong> — not started</li>
-              <li>Mobile app refresh</li>
-            </ul>
-          </div>
+      <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Work in progress</span></div>
+      <div class="slide-body">
+        <h2 class="anim">Everything below is <span class="wip-badge">Work in progress</span></h2>
+        <p class="sub anim anim-d1" style="margin-bottom:10px">Nothing here is finished. All of it is being built.</p>
+        <div class="wip-grid fill">
+          <div class="wip-item anim anim-d2"><div class="wip-dot"></div><div><strong>Self-healing</strong><span>AI detects errors and fixes them instantly</span></div></div>
+          <div class="wip-item anim anim-d3"><div class="wip-dot"></div><div><strong>Inventory module</strong><span>Store, kitchen, hostel stock</span></div></div>
+          <div class="wip-item anim anim-d4"><div class="wip-dot"></div><div><strong>Parent messaging</strong><span>Email & WhatsApp reliability</span></div></div>
+          <div class="wip-item anim anim-d5"><div class="wip-dot"></div><div><strong>Mobile app</strong><span>Parents, wardens, kitchen staff</span></div></div>
+          <div class="wip-item anim anim-d6"><div class="wip-dot"></div><div><strong>Platform stability</strong><span>Security & error hardening</span></div></div>
+          <div class="wip-item anim anim-d7"><div class="wip-dot"></div><div><strong>And more</strong><span>As the Samiti's needs grow</span></div></div>
         </div>
       </div>
-      <div class="slide-foot"><span>Progress</span><span>5 / 8</span></div>
+      <div class="slide-foot"><span>Progress</span><span>5 / 7</span></div>
     </section>
 
     <!-- 6 SELF HEALING -->
     <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Progress</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">Self-healing <span class="wip-badge">Work in progress</span></span>
-      </div>
-      <div class="slide-body grow">
-        <h2>Self-healing <span class="wip-badge">Work in progress</span></h2>
-        <p class="sub" style="margin-bottom:16px">When an error occurs, AI analyses it and resolves it — instantly, without waiting for a developer.</p>
-        <div class="card" style="padding:20px 24px;margin-bottom:16px">
-          <h3>How it works</h3>
+      <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Self-healing <span class="wip-badge">WIP</span></span></div>
+      <div class="slide-body fill" style="justify-content:center">
+        <h2 class="anim">Self-healing <span class="wip-badge">Work in progress</span></h2>
+        <p class="sub anim anim-d1" style="margin-bottom:12px">Error occurs → AI analyses → fix applied → system continues. No waiting for a developer.</p>
+        <div class="card anim anim-d2" style="padding:14px 18px;text-align:center">
           <div class="flow">
-            <span class="flow-step">Error occurs</span>
+            <span class="flow-step">Error</span>
             <span class="flow-arrow">→</span>
             <span class="flow-step">AI analyses</span>
             <span class="flow-arrow">→</span>
             <span class="flow-step">Fix applied</span>
             <span class="flow-arrow">→</span>
-            <span class="flow-step">System continues</span>
+            <span class="flow-step">Continues</span>
           </div>
-          <p style="font-size:0.8rem;color:var(--text-color);margin-top:14px">No manual intervention. No overnight wait. The platform repairs itself so daily operations — fees, attendance, parent portal — keep running.</p>
         </div>
-        <p style="font-size:0.82rem;color:var(--scroll_color)">This is being built now. It is not finished — but it is one of the most important things we are working on.</p>
+        <p class="anim anim-d4" style="font-size:0.72rem;color:var(--scroll_color);margin-top:12px;text-align:center">Fees, attendance, parent portal — keep running without manual intervention.</p>
       </div>
-      <div class="slide-foot"><span>Progress</span><span>6 / 8</span></div>
+      <div class="slide-foot"><span>Progress</span><span>6 / 7</span></div>
     </section>
 
-    <!-- 7 VISION + GOAL -->
-    <section class="slide">
-      <div class="slide-head">
-        <span class="phase">Goal</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">Vision & next month</span>
-      </div>
-      <div class="slide-body grow">
-        <div class="highlight-box" style="margin-bottom:18px">
-          <p><strong>The biggest thing about Aethon:</strong> it is going to grow as the organisation grows — and there are no limits. New units, new programmes, new staff, new parents. The platform expands with VSS and Dnyanda. We are not capped by a vendor's feature list or a license tier.</p>
-        </div>
-        <h2 style="font-size:1.2rem;margin-bottom:10px">Next month</h2>
-        <div class="grid-2" style="gap:14px">
-          <div class="card">
-            <div class="goal-item" style="padding:8px 0;border:none">
-              <div class="goal-num">1</div>
-              <div><strong>Inventory module — begin</strong><span>Scope and first version for store and kitchen stock.</span></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="goal-item" style="padding:8px 0;border:none">
-              <div class="goal-num">2</div>
-              <div><strong>Parent communication</strong><span>Reliable email and WhatsApp for fee reminders and alerts.</span></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="goal-item" style="padding:8px 0;border:none">
-              <div class="goal-num">3</div>
-              <div><strong>Report back</strong><span>Honest update on inventory and what is live.</span></div>
-            </div>
-          </div>
-        </div>
-        <p style="font-size:0.78rem;color:var(--scroll_color);margin-top:12px">Self-healing continues as work in progress — not a next-month deadline; it is being built steadily.</p>
-      </div>
-      <div class="slide-foot"><span>Goal</span><span>7 / 8</span></div>
-    </section>
-
-    <!-- 8 DISCUSSION -->
+    <!-- 7 VISION -->
     <section class="slide slide-cover">
-      <div class="slide-head">
-        <span class="phase">Discussion</span>
-        <img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" />
-        <span class="date">July 2026</span>
-      </div>
+      <div class="slide-head"><span class="phase">Vision</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">No limits</span></div>
       <div class="slide-body">
-        <h1 style="font-size:1.75rem">Questions & discussion</h1>
-        <p class="sub" style="margin-top:12px">Need → Progress → Goal</p>
-        <div class="grid-3" style="margin-top:28px;text-align:left">
-          <div class="card"><h3>Need</h3><p>Why Aethon exists and what it was built for.</p></div>
-          <div class="card"><h3>Progress</h3><p>What is live today and what is still pending.</p></div>
-          <div class="card"><h3>Goal</h3><p>Grows with the Samiti. Next month: inventory, communication.</p></div>
+        <h1 class="anim" style="font-size:1.5rem">Grows with the organisation.<br>No limits.</h1>
+        <div class="highlight-box anim anim-d1" style="margin:14px 0;text-align:left;max-width:560px">
+          <p><strong>Aethon expands as VSS & Dnyanda expand.</strong> New units, programmes, staff, parents — the platform grows with us. No vendor cap. No license tier. No ceiling.</p>
         </div>
-        <p class="meeting-note" style="margin-top:24px">dnyanda.vss.ac</p>
+        <p class="sub anim anim-d2" style="margin-top:8px">Questions & discussion</p>
+        <div class="grid-3 anim anim-d3" style="margin-top:14px;text-align:left;width:100%;max-width:560px">
+          <div class="card"><h3>Need</h3><p>Why we built it.</p></div>
+          <div class="card"><h3>Progress</h3><p>Live + work in progress.</p></div>
+          <div class="card"><h3>Vision</h3><p>Grows forever with us.</p></div>
+        </div>
       </div>
-      <div class="slide-foot"><span>VSS · Dnyanda</span><span>8 / 8</span></div>
+      <div class="slide-foot"><span>VSS · Dnyanda</span><span>7 / 7</span></div>
     </section>
 
   </main>
@@ -494,20 +404,45 @@
     const slides = [...document.querySelectorAll('.slide')];
     const counter = document.getElementById('counter');
     let current = 0;
+
+    function activateSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+        if (i === index) {
+          s.querySelectorAll('.anim').forEach(el => {
+            el.style.animation = 'none';
+            el.offsetHeight;
+            el.style.animation = '';
+          });
+        }
+      });
+    }
+
     function goTo(i) {
       current = Math.max(0, Math.min(i, slides.length - 1));
       slides[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
       counter.textContent = `${current + 1} / ${slides.length}`;
+      activateSlide(current);
     }
+
     document.getElementById('prev').onclick = () => goTo(current - 1);
     document.getElementById('next').onclick = () => goTo(current + 1);
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
     });
-    slides.forEach(s => new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { current = slides.indexOf(e.target); counter.textContent = `${current + 1} / ${slides.length}`; }});
-    }, { threshold: 0.55 }).observe(s));
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          current = slides.indexOf(e.target);
+          counter.textContent = `${current + 1} / ${slides.length}`;
+          activateSlide(current);
+        }
+      });
+    }, { threshold: 0.55 });
+    slides.forEach(s => observer.observe(s));
+    activateSlide(0);
   </script>
 </body>
 </html>
