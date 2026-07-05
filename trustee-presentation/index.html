@@ -175,7 +175,14 @@
     0%, 100% { box-shadow: 0 0 0 rgba(16,185,129,0); }
     50% { box-shadow: 0 0 24px rgba(16,185,129,0.15); }
   }
-  .highlight-box p { font-size: 0.74rem; color: var(--title_color); line-height: 1.45; }
+  .example-box {
+    background: linear-gradient(135deg, #fffbeb, #fef9c3);
+    border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+    border-radius: 6px; padding: 12px 14px; margin-top: 10px;
+  }
+  .example-box p { font-size: 0.72rem; color: #78350f; line-height: 1.5; }
+  .example-box strong { color: #92400e; }
+  .loc-stat .n { font-size: 1.5rem; }
 
   .flow { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 8px; }
   .flow-step {
@@ -381,7 +388,7 @@
   <nav class="hud hud-top" id="hudTop">
     <span>VSS · Dnyanda · Aethon</span>
     <div class="hud-actions">
-      <span class="slide-counter" id="counter">1 / 7</span>
+      <span class="slide-counter" id="counter">1 / 8</span>
       <button class="btn-ghost" id="btnPrev" type="button" title="Previous (←)">←</button>
       <button class="btn-ghost" id="btnNext" type="button" title="Next (→)">→</button>
       <button class="btn-ghost" id="btnOverview" type="button" title="Overview (O)">⊞</button>
@@ -410,7 +417,7 @@
           <p class="sub anim anim-d3" style="margin-top:8px;color:var(--scroll_color)">Where we are · What we are building · Where we are going</p>
           <span class="phase-pill anim anim-d4">Need → Progress → Vision</span>
         </div>
-        <div class="slide-foot"><span>Vidyarthi Sahayyak Samiti Warora</span><span>Cover</span></div>
+        <div class="slide-foot"><span>Vidyarthi Sahayyak Samiti Warora</span><span>1 / 8</span></div>
       </section>
 
       <section class="slide" data-title="The need" data-phase="Need">
@@ -430,11 +437,29 @@
         <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">What Aethon is</span></div>
         <div class="slide-body fill" style="justify-content:center">
           <h2 class="anim">Not bought. Built. Ours.</h2>
-          <p class="sub anim anim-d1" style="margin-bottom:10px">Custom-developed for VSS & Dnyanda. Our servers. Our data. Not ePrashashan — not trying to be.</p>
+          <p class="sub anim anim-d1" style="margin-bottom:10px">Custom-developed for VSS & Dnyanda. Our servers. Our data. Built for us — not bought off a shelf.</p>
           <div class="grid-3">
             <div class="card anim anim-d2"><h3>6 units, one system</h3><p>School, college, four hostels.</p></div>
             <div class="card anim anim-d3"><h3>Our workflows</h3><p>Fees, hostel, parents, staff.</p></div>
             <div class="card anim anim-d4"><h3>No limits</h3><p>Grows as the organisation grows.</p></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Need</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="Scale of Aethon" data-phase="Need">
+        <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">How big is this?</span></div>
+        <div class="slide-body">
+          <h2 class="anim">2.3 lakh+ lines of code</h2>
+          <p class="sub anim anim-d1" style="margin-bottom:8px">Written for VSS & Dnyanda alone — PHP, modules, screens, logic.</p>
+          <div class="grid-3 anim anim-d2" style="margin-bottom:8px">
+            <div class="stat loc-stat"><div class="n" data-count="234000">0</div><div class="l">Lines of code</div></div>
+            <div class="stat loc-stat"><div class="n" data-count="583">0</div><div class="l">Database tables</div></div>
+            <div class="stat loc-stat"><div class="n" data-count="4500">0</div><div class="l">Pages if printed</div></div>
+          </div>
+          <div class="example-box anim anim-d3">
+            <p><strong>समजा असे:</strong> VSS मध्ये ६ ठिकाणं चालतात — शाळा, कॉलेज, ४ हॉस्टेल. पूर्वी प्रत्येक ठिकाणाची वही वेगळी — फीसची वही, हॉस्टेलची, स्वयंपाकघराची, पालकांची. कधी मेळच नाही. <strong>Aethon ही एक मास्टर खता आहे</strong> — सगळ्या ६ ठिकाणांसाठी, एकाच ठिकाणी, जी आपण स्वतः बांधली आहे.</p>
+            <p style="margin-top:8px"><strong>In short:</strong> Generic software is like one accountant who only knows a single pan shop. Aethon is the whole system built for <em>your</em> samiti — 2.3 lakh lines and growing.</p>
           </div>
         </div>
         <div class="slide-foot"><span>Need</span><span></span></div>
@@ -465,12 +490,13 @@
           <p class="sub anim anim-d1" style="margin-bottom:8px">Nothing here is finished. All of it is being built.</p>
           <div class="wip-grid fill">
             <div class="wip-item anim anim-d2"><div class="wip-dot"></div><div><strong>Self-healing</strong><span>AI detects errors and fixes them instantly</span></div></div>
-            <div class="wip-item anim anim-d3"><div class="wip-dot"></div><div><strong>Inventory module</strong><span>Store, kitchen, hostel stock</span></div></div>
+            <div class="wip-item anim anim-d3"><div class="wip-dot"></div><div><strong>Kitchen & inventory</strong><span>Started — not good enough. Full rebuild in progress. Not live.</span></div></div>
             <div class="wip-item anim anim-d4"><div class="wip-dot"></div><div><strong>Parent messaging</strong><span>Email & WhatsApp reliability</span></div></div>
-            <div class="wip-item anim anim-d5"><div class="wip-dot"></div><div><strong>Mobile app</strong><span>Parents, wardens, kitchen staff</span></div></div>
+            <div class="wip-item anim anim-d5"><div class="wip-dot"></div><div><strong>Mobile app</strong><span>Parents, wardens, staff</span></div></div>
             <div class="wip-item anim anim-d6"><div class="wip-dot"></div><div><strong>Platform stability</strong><span>Security & error hardening</span></div></div>
             <div class="wip-item anim anim-d7"><div class="wip-dot"></div><div><strong>And more</strong><span>As the Samiti's needs grow</span></div></div>
           </div>
+          <p class="anim anim-d8" style="font-size:0.65rem;color:#b45309;margin-top:8px;text-align:center">Kitchen inventory is <strong>not</strong> production-ready. We are honest about what works and what doesn't.</p>
         </div>
         <div class="slide-foot"><span>Progress</span><span></span></div>
       </section>
@@ -503,7 +529,7 @@
           <p class="sub anim anim-d2">Questions & discussion</p>
           <div class="grid-3 anim anim-d3" style="margin-top:10px;text-align:left;width:100%;max-width:520px">
             <div class="card"><h3>Need</h3><p>Why we built it.</p></div>
-            <div class="card"><h3>Progress</h3><p>Live + work in progress.</p></div>
+            <div class="card"><h3>Progress</h3><p>What works + what's being built.</p></div>
             <div class="card"><h3>Vision</h3><p>Grows forever with us.</p></div>
           </div>
         </div>
@@ -538,7 +564,7 @@
     const thumb = document.createElement('button');
     thumb.className = 'overview-thumb';
     thumb.innerHTML = `<span class="num">${i + 1}</span><span>${s.dataset.phase}</span><strong>${s.dataset.title}</strong>`;
-    thumb.onclick = () => { closeOverview(); goTo(i); };
+    thumb.onclick = () => { closeOverview(); goTo(i, i > current ? 1 : -1); };
     overview.appendChild(thumb);
   });
 
