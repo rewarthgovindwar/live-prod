@@ -1,24 +1,28 @@
-# VSS Trustee Presentation 2026
+# Aethon Meeting Deck — VSS & Dnyanda
 
-**Not a feature demo.** A board presentation on digital stewardship of the Samiti.
+Simple update deck: **Need → Progress → Goal**
 
-## Open & export
+## Live link
 
-1. Open `index.html` in Chrome
-2. Arrow keys to navigate
-3. **↓ PDF** → Landscape, no margins, background graphics on → 12 pages
+https://dnyanda.vss.ac/trustee-presentation/
 
-## Slide arc
+## Design
 
-1. Title — Digital Stewardship of the Samiti
-2. Why this is before the Board
-3. The organisation we govern
-4. The problem (before vs what we needed)
-5. We built Aethon
-6. Quote
-7. What has changed (impact)
-8. Capabilities — one slide, brief
-9. Stewardship & ownership
-10. Honest report — working vs pending
-11. What we ask of trustees
-12. Q&A
+Uses exact site theme from dnyanda.vss.ac:
+- Poppins font
+- Green palette (`#0e4d38`, `#059669`, `#10b981`, `#f7faf9`, etc.)
+- VSS logo from production uploads
+
+## Slides (7)
+
+1. Cover — meeting purpose
+2. Need — why we built Aethon
+3. Need — what Aethon is
+4. Progress — live today
+5. Progress — honest status (inventory pending)
+6. Goal — next month vision
+7. Discussion
+
+## PDF
+
+Chrome → Save PDF → Landscape → Background graphics on
