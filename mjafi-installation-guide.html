@@ -130,9 +130,8 @@
 </p>
 
 <p>
-  This note covers what was set up on your server, what went wrong along the way,
-  and what still needs doing before anyone enters real patient data. I've tried to
-  keep it readable — you shouldn't need to be a developer to follow most of it.
+  This note covers what was set up on your server, how it works, and what still
+  needs doing before anyone enters real patient data.
 </p>
 
 <h2>What we actually installed</h2>
@@ -159,9 +158,7 @@
 
 <h2>How it fits together on the server</h2>
 
-<p>Your Trecsa server already runs CyberPanel with LiteSpeed handling all websites.
-We couldn't use the Caddy setup that came in the zip because LiteSpeed already owns
-ports 80 and 443. So the layout ended up like this:</p>
+<p>On this server the site runs through CyberPanel and LiteSpeed. The layout is:</p>
 
 <div class="diagram">Browser  →  mjafi.trecsa.in (HTTPS)
                 ↓
@@ -183,46 +180,58 @@ ports 80 and 443. So the layout ended up like this:</p>
   <li>Web server config: CyberPanel vhost for mjafi.trecsa.in</li>
 </ul>
 
-<h2>What we did, in order</h2>
+<h2>Installation summary</h2>
 
 <ol>
-  <li>Downloaded and unpacked the zip from the GitHub repo.</li>
-  <li>SSH'd into 103.217.253.53. The <code>admin</code> login didn't work — we used <code>root</code> instead (per your instruction).</li>
-  <li>Installed Docker — it wasn't on the server before.</li>
-  <li>Copied the backend to <code>/opt/mjafi/</code>, generated passwords, started the database and API containers.</li>
-  <li>Ran the database setup scripts and created six test centres with five user accounts.</li>
-  <li>Created the mjafi.trecsa.in site in CyberPanel and got an SSL certificate (valid until 15 Nov 2026).</li>
-  <li>Put the HTML file in place and configured LiteSpeed to forward API requests to the backend.</li>
-  <li>Tested — health check passes, login API works.</li>
+  <li>Unpacked the zip and deployed the backend to <code>/opt/mjafi/</code></li>
+  <li>Started the database and API, ran migrations, and created six test centres with five user accounts</li>
+  <li>Created <code>mjafi.trecsa.in</code> in CyberPanel with SSL (valid until 15 November 2026)</li>
+  <li>Published the HTML interface and configured the web server to forward API requests to the backend</li>
+  <li>Verified the health check and API login</li>
 </ol>
 
-<h2>Problems we ran into</h2>
+<h2>Known issues</h2>
 
-<p>Nothing unusual for this kind of deploy, but worth recording:</p>
+<p>These are limitations of the current setup — things to be aware of before go-live:</p>
 
-<h3>Admin SSH login failed</h3>
-<p>The <code>admin</code> account rejected the password. Switched to <code>root</code> and that worked fine.</p>
+<h3>The website is not connected to the backend yet</h3>
+<p>
+  The page at <a href="https://mjafi.trecsa.in">mjafi.trecsa.in</a> looks complete, but it
+  runs on <strong>sample data stored inside the HTML file</strong>. It does not read from or
+  write to the live database. The API behind it is working — you can test login through
+  the API directly — but the screen users see is still a prototype.
+</p>
 
-<h3>No Docker on the server</h3>
-<p>The backend is designed to run in Docker containers. Had to install Docker Engine from scratch — took a few minutes, one-time thing.</p>
+<h3>Login screen behaviour</h3>
+<p>
+  On the demo page, the <strong>Sign In button stays disabled</strong> until you click one
+  of the user accounts listed on the left. This catches people out — the page can look
+  broken when it isn't. Once you select an account, Sign In becomes active and you can
+  enter the demo environment.
+</p>
+<p>
+  When the frontend is properly connected to the backend, login will use real email and
+  password credentials instead of this account-picker flow.
+</p>
 
-<h3>Port 80/443 already taken</h3>
-<p>The zip assumes Caddy will be your front door. On your server, LiteSpeed already does that job for every domain. We dropped Caddy from the setup and let LiteSpeed handle TLS and proxying instead. Same result, different path.</p>
+<h3>Test accounts and passwords</h3>
+<p>
+  Five placeholder accounts were created during setup. They all share one temporary
+  password and use example email addresses. These are for testing only — not for real
+  clinical use. See the table below.
+</p>
 
-<h3>Config file formatting</h3>
-<p>One setting (<code>REQUIRE_2FA_FOR_ROLES</code>) needed to be in JSON format in the <code>.env</code> file, not plain comma-separated text. Small fix, but it blocked the first startup attempt.</p>
-
-<h3>Database app-user password</h3>
-<p>This was the annoying one. The database creates a separate low-privilege user (<code>wm_app</code>) for the API to connect as — that's what makes row-level security work. But the compose file wasn't passing the app password to the database container on first boot, so the user got created with the wrong credentials. Fix: add the password to the db service config, wipe the volume, start fresh. Migrations and seed ran cleanly after that.</p>
-
-<h3>"Site not visible"</h3>
-<p>From the server side, the site responds fine — we get HTTP 200, SSL is valid, DNS points to the right IP. If you still can't see it, it's usually one of these:</p>
+<h3>Package gaps in the zip (for developers)</h3>
+<p>
+  Two items in the supplied <code>docker-compose.yml</code> and <code>.env.example</code>
+  need correction before a clean install elsewhere:
+</p>
 <ul>
-  <li>DNS hasn't propagated to your network yet (can take a few hours)</li>
-  <li>Browser cache — try a hard refresh or incognito window</li>
-  <li>You're on <code>www</code> and something's off with the alias (try without www)</li>
-  <li>The demo login screen looks blank until you <em>click one of the user accounts</em> on the left — the Sign In button stays greyed out until you do</li>
-  <li>Office firewall blocking the IP</li>
+  <li>The database container must receive <code>POSTGRES_APP_PASSWORD</code> in its
+      environment, or the <code>wm_app</code> role is created with the wrong credentials</li>
+  <li>List-type settings such as <code>REQUIRE_2FA_FOR_ROLES</code> and
+      <code>CORS_ORIGINS</code> must be JSON arrays in <code>.env</code>, not
+      comma-separated text as shown in the example file</li>
 </ul>
 
 <h2>Test logins (change these before go-live)</h2>
