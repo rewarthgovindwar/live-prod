@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMAGe WM Registry — Installation Notes (mjafi.trecsa.in)</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #555;
+    --accent: #6d2130;
+    --accent-light: #f8f0f1;
+    --border: #e2ddd6;
+    --bg: #faf9f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+    background: #fff;
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(0,0,0,.06);
+  }
+  h1 {
+    font-size: 1.75rem;
+    font-weight: normal;
+    line-height: 1.3;
+    margin: 0 0 6px;
+    color: var(--accent);
+  }
+  .meta {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 {
+    font-size: 1.15rem;
+    font-weight: normal;
+    margin: 36px 0 12px;
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 24px 0 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 1.4em; }
+  li { margin-bottom: 6px; }
+  .callout {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  .warn {
+    background: #fff8e6;
+    border-left: 3px solid #c9a227;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  code, .mono {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.88em;
+    background: #f3f1ed;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.88rem;
+    margin: 16px 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { font-weight: 600; color: var(--muted); }
+  .diagram {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    background: #f7f5f2;
+    padding: 16px;
+    margin: 16px 0;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+    border: 1px solid var(--border);
+  }
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media print {
+    body { background: #fff; }
+    .wrap { box-shadow: none; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>IMAGe WM Registry — Installation Notes</h1>
+<p class="meta">
+  mjafi.trecsa.in &nbsp;·&nbsp; 17 August 2026 &nbsp;·&nbsp; Server 103.217.253.53
+</p>
+
+<p>
+  This note covers what was set up on your server, what went wrong along the way,
+  and what still needs doing before anyone enters real patient data. I've tried to
+  keep it readable — you shouldn't need to be a developer to follow most of it.
+</p>
+
+<h2>What we actually installed</h2>
+
+<p>
+  The zip file (<code>mjafi.zip.zip</code>) had two things in it. First, the
+  <strong>backend</strong> — that's the real application: database, login system,
+  permissions, audit trail, all the rules about which hospital can see which patients.
+  Second, a single <strong>HTML file</strong> — the screen clinicians would use.
+</p>
+
+<p>
+  The backend is up and working. The web page is also live at
+  <a href="https://mjafi.trecsa.in">https://mjafi.trecsa.in</a>. But here's the
+  catch: the page you see right now is still running on <em>demo data baked into
+  the file itself</em>. It doesn't talk to the backend yet. So if you log in and
+  browse around, you're looking at a prototype, not the live registry.
+</p>
+
+<div class="callout">
+  <strong>In short:</strong> the engine is running. The dashboard is installed
+  but not plugged in. That's the main thing left to do.
+</div>
+
+<h2>How it fits together on the server</h2>
+
+<p>Your Trecsa server already runs CyberPanel with LiteSpeed handling all websites.
+We couldn't use the Caddy setup that came in the zip because LiteSpeed already owns
+ports 80 and 443. So the layout ended up like this:</p>
+
+<div class="diagram">Browser  →  mjafi.trecsa.in (HTTPS)
+                ↓
+         LiteSpeed (your existing web server)
+                ├── /  →  the HTML page (public_html)
+                └── /api/  →  backend on 127.0.0.1:8010 (internal only)
+                              ↓
+                         PostgreSQL database (internal only)</div>
+
+<p>
+  The database and API aren't reachable from the internet directly — only through
+  LiteSpeed. That's intentional.
+</p>
+
+<h3>Where things live</h3>
+<ul>
+  <li>Backend + database: <code>/opt/mjafi/wm-registry-backend/</code></li>
+  <li>Website file: <code>/home/mjafi.trecsa.in/public_html/index.html</code></li>
+  <li>Web server config: CyberPanel vhost for mjafi.trecsa.in</li>
+</ul>
+
+<h2>What we did, in order</h2>
+
+<ol>
+  <li>Downloaded and unpacked the zip from the GitHub repo.</li>
+  <li>SSH'd into 103.217.253.53. The <code>admin</code> login didn't work — we used <code>root</code> instead (per your instruction).</li>
+  <li>Installed Docker — it wasn't on the server before.</li>
+  <li>Copied the backend to <code>/opt/mjafi/</code>, generated passwords, started the database and API containers.</li>
+  <li>Ran the database setup scripts and created six test centres with five user accounts.</li>
+  <li>Created the mjafi.trecsa.in site in CyberPanel and got an SSL certificate (valid until 15 Nov 2026).</li>
+  <li>Put the HTML file in place and configured LiteSpeed to forward API requests to the backend.</li>
+  <li>Tested — health check passes, login API works.</li>
+</ol>
+
+<h2>Problems we ran into</h2>
+
+<p>Nothing unusual for this kind of deploy, but worth recording:</p>
+
+<h3>Admin SSH login failed</h3>
+<p>The <code>admin</code> account rejected the password. Switched to <code>root</code> and that worked fine.</p>
+
+<h3>No Docker on the server</h3>
+<p>The backend is designed to run in Docker containers. Had to install Docker Engine from scratch — took a few minutes, one-time thing.</p>
+
+<h3>Port 80/443 already taken</h3>
+<p>The zip assumes Caddy will be your front door. On your server, LiteSpeed already does that job for every domain. We dropped Caddy from the setup and let LiteSpeed handle TLS and proxying instead. Same result, different path.</p>
+
+<h3>Config file formatting</h3>
+<p>One setting (<code>REQUIRE_2FA_FOR_ROLES</code>) needed to be in JSON format in the <code>.env</code> file, not plain comma-separated text. Small fix, but it blocked the first startup attempt.</p>
+
+<h3>Database app-user password</h3>
+<p>This was the annoying one. The database creates a separate low-privilege user (<code>wm_app</code>) for the API to connect as — that's what makes row-level security work. But the compose file wasn't passing the app password to the database container on first boot, so the user got created with the wrong credentials. Fix: add the password to the db service config, wipe the volume, start fresh. Migrations and seed ran cleanly after that.</p>
+
+<h3>"Site not visible"</h3>
+<p>From the server side, the site responds fine — we get HTTP 200, SSL is valid, DNS points to the right IP. If you still can't see it, it's usually one of these:</p>
+<ul>
+  <li>DNS hasn't propagated to your network yet (can take a few hours)</li>
+  <li>Browser cache — try a hard refresh or incognito window</li>
+  <li>You're on <code>www</code> and something's off with the alias (try without www)</li>
+  <li>The demo login screen looks blank until you <em>click one of the user accounts</em> on the left — the Sign In button stays greyed out until you do</li>
+  <li>Office firewall blocking the IP</li>
+</ul>
+
+<h2>Test logins (change these before go-live)</h2>
+
+<p>Everyone gets the same temporary password: <code>ChangeMe#2026Registry</code></p>
+
+<table>
+  <tr><th>Email</th><th>Role</th></tr>
+  <tr><td>deo.pgimer@example.org</td><td>Data entry — PGIMER</td></tr>
+  <tr><td>clinician.pgimer@example.org</td><td>Clinician — PGIMER</td></tr>
+  <tr><td>hod.pgimer@example.org</td><td>Head of Department — PGIMER</td></tr>
+  <tr><td>deo.cmc@example.org</td><td>Data entry — CMC Vellore</td></tr>
+  <tr><td>coordinator@imagesociety.co.in</td><td>National coordinator</td></tr>
+</table>
+
+<p>These are placeholder emails. Swap them for real institutional addresses before anyone uses this for real work.</p>
+
+<h2>Putting this on a main domain (shared hosting question)</h2>
+
+<p>People often ask: can we just upload this to regular shared hosting like any WordPress site?</p>
+
+<p>Honestly — not really, not the full thing.</p>
+
+<p>The <strong>web page</strong> (the HTML file) can go anywhere. Upload it, done. But the <strong>backend</strong> needs PostgreSQL (most shared hosts only offer MySQL), a always-on Python process, and ideally Docker. Most cPanel-style plans don't give you that.</p>
+
+<p>Your realistic options:</p>
+
+<ul>
+  <li><strong>What we did</strong> — VPS or dedicated server (your Trecsa box). Full control. This is what the software was built for.</li>
+  <li><strong>Split setup</strong> — HTML on shared hosting pointing at an API hosted elsewhere. Works, but someone has to maintain two pieces.</li>
+  <li><strong>Cloud VM</strong> — AWS, DigitalOcean, etc. Same idea as the VPS route, just rented differently.</li>
+</ul>
+
+<p>If you want this on something like <code>registry.yourhospital.in</code> instead of a subdomain, the steps are the same — point DNS to the server, create the site in CyberPanel, upload the HTML, run the Docker stack, set up the proxy. The subdomain vs main domain part doesn't change much technically.</p>
+
+<h2>Security — what's in place and what isn't</h2>
+
+<p>The backend was clearly built with clinical data in mind. Centre isolation is enforced twice (in the application code and again at the database level), passwords use Argon2 hashing, there's login lockout after five failures, 2FA for senior roles, an audit log that can't be tampered with, and the API docs are turned off in production.</p>
+
+<p>What's <em>not</em> sorted yet:</p>
+
+<ul>
+  <li>The demo frontend bypasses all of that — it's offline fake data</li>
+  <li>Test passwords are still the default for every account</li>
+  <li>Server firewall isn't locked down (everything's open on INPUT)</li>
+  <li>SSH is password-based — keys would be better</li>
+  <li>This server runs a lot of other things (mail, FTP, GitLab, WhatsApp hooks) on the same box</li>
+</ul>
+
+<div class="warn">
+  <strong>Before real patient data goes in:</strong> connect the frontend to the API,
+  change all passwords, harden the server, test a backup restore, and make sure
+  ethics approvals and data-sharing agreements are signed.
+</div>
+
+<h2>If something breaks — quick checks for your IT person</h2>
+
+<p>SSH in and run:</p>
+
+<pre style="background:#f7f5f2;padding:14px;font-size:0.82rem;overflow-x:auto;border:1px solid #e2ddd6;"><code>cd /opt/mjafi/wm-registry-backend
+docker compose -f docker-compose.prod.yml ps
+curl -s http://127.0.0.1:8010/health</code></pre>
+
+<p>You want to see both containers "Up" and the health response saying <code>"status":"ok"</code>.</p>
+
+<p>To restart the API after a config change:</p>
+
+<pre style="background:#f7f5f2;padding:14px;font-size:0.82rem;overflow-x:auto;border:1px solid #e2ddd6;"><code>cd /opt/mjafi/wm-registry-backend
+docker compose -f docker-compose.prod.yml restart api</code></pre>
+
+<p>Backups run nightly at 2 AM to <code>/opt/mjafi/wm-registry-backend/backups/</code>. Log at <code>/var/log/mjafi-backup.log</code>. Nobody's tested a restore yet — worth doing once.</p>
+
+<h2>What I'd do next, in order</h2>
+
+<ol>
+  <li>Confirm the URL loads from your end (phone on mobile data is a good test)</li>
+  <li>Get a developer to wire the HTML page to the live API</li>
+  <li>Replace test accounts with real hospital emails</li>
+  <li>Force password change on first login</li>
+  <li>Run a backup and try restoring it</li>
+  <li>Tighten server security (firewall, SSH keys)</li>
+  <li>Sort out ethics / DPDP paperwork</li>
+</ol>
+
+<h2>Quick reference</h2>
+
+<table>
+  <tr><td>URL</td><td><a href="https://mjafi.trecsa.in">https://mjafi.trecsa.in</a></td></tr>
+  <tr><td>Server IP</td><td>103.217.253.53</td></tr>
+  <tr><td>Panel</td><td>CyberPanel + LiteSpeed</td></tr>
+  <tr><td>Backend</td><td>/opt/mjafi/wm-registry-backend/</td></tr>
+  <tr><td>Website files</td><td>/home/mjafi.trecsa.in/public_html/</td></tr>
+  <tr><td>SSL expires</td><td>15 November 2026</td></tr>
+  <tr><td>Status</td><td>Backend live. Frontend is demo only.</td></tr>
+</table>
+
+<div class="footer">
+  Handover notes from the mjafi.trecsa.in deployment, 17 August 2026.
+  Take a backup before changing anything on the server.
+</div>
+
+</div>
+</body>
+</html>
