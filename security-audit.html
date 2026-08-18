@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMAGe WM Registry — Security &amp; Code Audit</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #555;
+    --accent: #6d2130;
+    --accent-light: #f8f0f1;
+    --border: #e2ddd6;
+    --bg: #faf9f7;
+    --crit: #8b1a1a;
+    --crit-bg: #fdf0f0;
+    --high: #a34b00;
+    --high-bg: #fff5eb;
+    --med: #7a6200;
+    --med-bg: #fffbea;
+    --low: #3d5a3d;
+    --low-bg: #f3f8f3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+    background: #fff;
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(0,0,0,.06);
+  }
+  h1 {
+    font-size: 1.75rem;
+    font-weight: normal;
+    line-height: 1.3;
+    margin: 0 0 6px;
+    color: var(--accent);
+  }
+  .meta {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 {
+    font-size: 1.15rem;
+    font-weight: normal;
+    margin: 36px 0 12px;
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 24px 0 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 1.4em; }
+  li { margin-bottom: 6px; }
+  .callout {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  .warn {
+    background: #fff8e6;
+    border-left: 3px solid #c9a227;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  code {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.88em;
+    background: #f3f1ed;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.88rem;
+    margin: 16px 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { font-weight: 600; color: var(--muted); }
+  .finding {
+    margin: 20px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+  .finding h3 { margin-top: 0; }
+  .sev {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .sev-crit { background: var(--crit-bg); color: var(--crit); }
+  .sev-high { background: var(--high-bg); color: var(--high); }
+  .sev-med  { background: var(--med-bg);  color: var(--med); }
+  .sev-low  { background: var(--low-bg);  color: var(--low); }
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .nav {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.82rem;
+    margin-bottom: 24px;
+  }
+  .nav a { color: var(--accent); }
+  @media print {
+    body { background: #fff; }
+    .wrap { box-shadow: none; padding: 20px; max-width: none; }
+    .finding { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>IMAGe WM Registry — Security &amp; Code Audit</h1>
+<p class="meta">
+  mjafi.trecsa.in &nbsp;·&nbsp; 18 August 2026 &nbsp;·&nbsp;
+  Scope: backend (<code>wm-registry-backend</code>) + frontend HTML from <code>mjafi.zip.zip</code>
+</p>
+
+<p class="nav">
+  Related: <a href="https://mjafi.trecsa.in/installation-guide.html">Installation guide</a>
+  &nbsp;·&nbsp; <a href="https://mjafi.trecsa.in/">Registry (demo UI)</a>
+</p>
+
+<p>
+  This report covers vulnerabilities and functional bugs found by reviewing the source
+  code in the zip package and the live deployment at mjafi.trecsa.in. It is meant for
+  developers and project leads — not as a formal penetration-test certificate.
+</p>
+
+<h2>Summary</h2>
+
+<p>
+  The backend is well thought out for a multicentric clinical registry: centre isolation,
+  role permissions, workflow states, audit logging, strong password hashing, and 79 automated
+  tests including database row-level security checks. That said, there are gaps that must
+  be closed before real patient data goes in.
+</p>
+
+<table>
+  <tr><th>Severity</th><th>Count</th><th>Theme</th></tr>
+  <tr><td>Critical</td><td>2</td><td>Frontend bypasses all security; database RLS gap for national role</td></tr>
+  <tr><td>High</td><td>4</td><td>Open metadata API, loose user-table RLS, account enumeration, zip install bugs</td></tr>
+  <tr><td>Medium</td><td>8</td><td>Import data storage, 2FA handling, rate limits, token binding, etc.</td></tr>
+  <tr><td>Low</td><td>6</td><td>Minor disclosure, pagination bug, demo XSS surface</td></tr>
+  <tr><td>Functional bugs</td><td>5</td><td>Incorrect totals, config format, compose file defects</td></tr>
+</table>
+
+<div class="warn">
+  <strong>Do not enter real patient data</strong> until the two critical items below are
+  resolved and seed passwords are changed.
+</div>
+
+<h2>Critical findings</h2>
+
+<div class="finding">
+  <h3><span class="sev sev-crit">Critical</span> C1 — Website not connected to the backend</h3>
+  <p><strong>Where:</strong> <code>IMAGe_WM_Registry_140826_1346h.html</code></p>
+  <p>
+    The page at mjafi.trecsa.in looks like a full registry, but it runs entirely on
+    sample data stored inside the HTML file. It never calls the live API, never checks
+    passwords against the server, and never enforces centre isolation or audit rules.
+  </p>
+  <p><strong>Impact:</strong> All backend security is inactive for anyone using the website.</p>
+  <p><strong>Fix:</strong> Connect login, patient records, imports, exports, and analytics to <code>/api/v1/*</code> with proper token handling.</p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-crit">Critical</span> C2 — Database allows national role to read all records</h3>
+  <p><strong>Where:</strong> Alembic migration <code>0001_initial.py</code>, policy <code>patients_read</code></p>
+  <p>
+    When the national coordinator session is active (<code>app.national = on</code>),
+    PostgreSQL row-level security permits reading <em>every</em> patient row — including
+    drafts and submitted records that have not been released to the pool.
+  </p>
+  <p>
+    The application code filters to verified/approved records via <code>scoped_patients()</code>,
+    but the database itself does not. Any future endpoint that forgets that filter, or any
+    direct query under the app database role, could expose pre-release records and hospital
+    CR numbers from all centres.
+  </p>
+  <p><strong>Fix:</strong> Add a status condition to the national read policy (e.g. only <code>VERIFIED</code> and <code>APPROVED</code>).</p>
+</div>
+
+<h2>High findings</h2>
+
+<div class="finding">
+  <h3><span class="sev sev-high">High</span> H1 — Metadata API is open without login</h3>
+  <p><strong>Where:</strong> <code>/api/v1/meta/dictionary</code>, <code>/meta/roles</code>, <code>/meta/config</code></p>
+  <p>
+    Anyone on the internet can fetch the full field dictionary, permission matrix, workflow
+    transitions, token lifetimes, and import limits — no authentication required.
+  </p>
+  <p><strong>Fix:</strong> Require a valid login token for these endpoints, or strip sensitive detail from the public response.</p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-high">High</span> H2 — User table has no centre scoping at database level</h3>
+  <p><strong>Where:</strong> RLS policy <code>users_all … USING (true)</code></p>
+  <p>
+    Every authenticated database session can read all user accounts (emails, names, roles)
+    if any code path runs a broad <code>SELECT</code> on the users table without an
+    application filter.
+  </p>
+  <p><strong>Fix:</strong> Scope user-table RLS by centre, with a controlled exception for the national role.</p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-high">High</span> H3 — Locked accounts reveal themselves on login</h3>
+  <p><strong>Where:</strong> <code>app/api/auth.py</code> login handler</p>
+  <p>
+    Wrong password returns a generic “invalid email, password or code” message. A locked
+    account returns a distinct HTTP 423 with text explaining the lockout — which tells an
+    attacker that the email address is registered.
+  </p>
+  <p><strong>Fix:</strong> Return the same generic failure message for locked and wrong-password cases.</p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-high">High</span> H4 — Defects in the shipped zip package</h3>
+  <p>These are bugs in the package itself, not deployment mistakes:</p>
+  <ul>
+    <li><code>docker-compose.yml</code> does not pass <code>POSTGRES_APP_PASSWORD</code> to the database container, so the <code>wm_app</code> role is created with wrong credentials on first install.</li>
+    <li><code>.env.example</code> shows comma-separated lists, but the application expects JSON arrays — startup fails unless the format is corrected manually.</li>
+  </ul>
+</div>
+
+<h2>Medium findings</h2>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M1 — Query list loads all patients for lookup</h3>
+  <p><strong>Where:</strong> <code>app/api/admin.py</code>, <code>list_queries</code></p>
+  <p>
+    When building the query list, the code loads every patient row into memory to attach
+    registry IDs. Combined with the national RLS gap, this can expose linkage to
+    unreleased records.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M2 — Import preview stores full file in database</h3>
+  <p><strong>Where:</strong> <code>app/api/imports.py</code></p>
+  <p>
+    The entire uploaded worksheet is stored in a JSON column between preview and commit.
+    Patient identifiers sit duplicated at rest; uncommitted batches may linger.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M3 — 2FA enrolment returns secret in API response</h3>
+  <p><strong>Where:</strong> <code>POST /api/v1/auth/2fa/enrol</code></p>
+  <p>
+    The TOTP secret is returned in plain JSON. Any intercept, log, or browser extension
+    could capture it. Prefer QR-only delivery over HTTPS.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M4 — TOTP secrets stored unencrypted in database</h3>
+  <p>
+    A backup compromise would allow 2FA bypass for Head of Department and national
+    coordinator accounts. Column-level encryption is recommended.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M5 — No rate limiting on auth endpoints</h3>
+  <p>
+    Per-account lockout exists after five failures, but there is no IP-level throttling.
+    Distributed login attempts or refresh-token abuse are not blocked at the edge.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M6 — Refresh tokens not tied to device</h3>
+  <p>
+    IP and user-agent are stored but not checked on refresh. A stolen refresh token works
+    from another machine until it expires or is revoked.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M7 — Parallel refresh race</h3>
+  <p>
+    Two simultaneous refresh requests with the same token could both succeed briefly before
+    revocation is committed. Low probability, but could create duplicate valid sessions.
+  </p>
+</div>
+
+<div class="finding">
+  <h3><span class="sev sev-med">Medium</span> M8 — Symmetric JWT signing (HS256)</h3>
+  <p>
+    A leaked <code>SECRET_KEY</code> allows forging any access token. Mitigated today by
+    strong key generation and short token lifetime, but worth noting for key rotation policy.
+  </p>
+</div>
+
+<h2>Low &amp; informational</h2>
+
+<ul>
+  <li><strong>L1</strong> — <code>/health</code> exposes environment name (minor).</li>
+  <li><strong>L2</strong> — Patient list pagination <code>total</code> is wrong when filtering by IPSS risk or overdue follow-up in application code after the SQL query.</li>
+  <li><strong>L3</strong> — Audit log search allows <code>%</code> wildcards in the action filter (harmless but broad).</li>
+  <li><strong>L4</strong> — <code>create_centre</code> accepts a raw dict instead of a validated schema.</li>
+  <li><strong>L5</strong> — Demo frontend uses <code>innerHTML</code> with an <code>esc()</code> helper; fine for static demo data, must be rigorous when wired to live API fields.</li>
+  <li><strong>L6</strong> — Import size capped at 15 MB; reasonable but not a full denial-of-service strategy.</li>
+</ul>
+
+<h2>Functional bugs (non-security)</h2>
+
+<table>
+  <tr><th>ID</th><th>Issue</th><th>Location</th></tr>
+  <tr><td>B1</td><td>Wrong page total when filtering by risk or follow-up</td><td><code>patients.py</code></td></tr>
+  <tr><td>B2</td><td><code>.env.example</code> list format incompatible with app</td><td><code>.env.example</code></td></tr>
+  <tr><td>B3</td><td>Compose file missing app password on db service</td><td><code>docker-compose.yml</code></td></tr>
+  <tr><td>B4</td><td>Demo login: Sign In disabled until user account is clicked</td><td>Frontend HTML</td></tr>
+  <tr><td>B5</td><td>Export centre filter uses fragile SQLAlchemy pattern</td><td><code>exports.py</code></td></tr>
+</table>
+
+<h2>What the backend does well</h2>
+
+<p>Verified in source and tests — worth preserving:</p>
+
+<ul>
+  <li>Argon2id password hashing (64 MB, 3 passes)</li>
+  <li>Dummy hash verification on unknown emails (timing parity)</li>
+  <li>Refresh token rotation — old token dies after use (tested)</li>
+  <li>Centre scoping in application layer; foreign records return 404 not 403</li>
+  <li>Workflow state machine enforced server-side</li>
+  <li>Derived clinical values computed server-side; clients cannot submit them</li>
+  <li>Optimistic locking via <code>version</code> field</li>
+  <li>Append-only audit log; UPDATE/DELETE revoked on audit table</li>
+  <li>API documentation disabled in production mode</li>
+  <li>79 automated tests including raw SQL RLS checks</li>
+  <li>Container runs as non-root user</li>
+  <li>Upload extension, size, and row limits on bulk import</li>
+</ul>
+
+<h2>Live deployment risks (mjafi.trecsa.in)</h2>
+
+<p>Separate from the zip code — current server state:</p>
+
+<ul>
+  <li>All seeded accounts still use temporary password <code>ChangeMe#2026Registry</code></li>
+  <li>Shared server hosts mail, FTP, GitLab, and other sites alongside the registry</li>
+  <li>Host firewall not confirmed locked down</li>
+  <li>HSTS not set on the LiteSpeed vhost</li>
+  <li>Nightly backup scheduled; restore never tested</li>
+</ul>
+
+<h2>Recommended fix order</h2>
+
+<ol>
+  <li>Connect the frontend to the live API (C1)</li>
+  <li>Fix national-role RLS to pooled-status-only (C2)</li>
+  <li>Correct <code>docker-compose.yml</code> and <code>.env.example</code> (H4)</li>
+  <li>Require authentication on <code>/meta/*</code> (H1)</li>
+  <li>Tighten user-table RLS (H2)</li>
+  <li>Unify login failure messages for lockout (H3)</li>
+  <li>Add rate limiting on auth at LiteSpeed or application layer (M5)</li>
+  <li>Replace seed accounts and force password change</li>
+  <li>Encrypt TOTP secrets; stop returning secret in enrol response (M3/M4)</li>
+  <li>Fix pagination total bug (B1)</li>
+</ol>
+
+<h2>Tests worth adding</h2>
+
+<ul>
+  <li>National RLS: with <code>app.national=on</code>, draft patient rows must not be readable</li>
+  <li><code>/meta/dictionary</code> without token → 401 (after fix)</li>
+  <li>Locked account login → same response body as wrong password</li>
+  <li>Parallel refresh with same token → only one succeeds</li>
+</ul>
+
+<div class="callout">
+  <strong>Bottom line:</strong> The backend is stronger than average for a registry prototype.
+  The two blockers for production are the disconnected frontend and the database not enforcing
+  the “pooled records only” rule for the national role. Fix those before any real clinical data.
+</div>
+
+<div class="footer">
+  Security &amp; code review — IMAGe WM Registry, 18 August 2026.
+  Static source review; not a formal penetration test.
+  Save as PDF: open this page → Print → Save as PDF.
+</div>
+
+</div>
+</body>
+</html>
