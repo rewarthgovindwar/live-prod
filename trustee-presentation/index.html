@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aethon — VSS & Dnyanda</title>
+  <link rel="icon" href="https://dnyanda.vss.ac/public/uploads/settings/0ac173ee0972040150ba2985e71e9c5c.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+  :root {
+    --base_font: Poppins, sans-serif;
+    --base_color: #0e4d38;
+    --gradient_1: #10b981;
+    --gradient_2: #059669;
+    --gradient_3: #047857;
+    --scroll_color: #6e9485;
+    --text-color: #64748b;
+    --text_white: #ffffff;
+    --bg_white: #f7faf9;
+    --border_color: #d8ede5;
+    --title_color: #0e4d38;
+    --sidebar_bg: #071912;
+    --primary-color: #059669;
+    --sidebar-section: #3d6e58;
+    --notification_title: #08120d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: var(--base_font); background: var(--sidebar_bg); color: var(--text-color); }
+
+  /* ── Animated background ── */
+  #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .bg-glow {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(16,185,129,0.12), transparent),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(5,150,105,0.1), transparent);
+    animation: bgShift 12s ease-in-out infinite alternate;
+  }
+  @keyframes bgShift {
+    0% { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.05); }
+  }
+
+  /* ── Presentation shell ── */
+  .presenter {
+    position: fixed; inset: 0; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 24px 56px;
+  }
+
+  .slide-viewport {
+    position: relative;
+    width: min(1280px, 100%);
+    aspect-ratio: 16 / 9;
+    max-height: calc(100vh - 100px);
+    perspective: 1200px;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    background: var(--bg_white);
+    border-radius: 10px;
+    border: 1px solid var(--border_color);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    opacity: 0; visibility: hidden;
+    transform: translateX(40px) scale(0.97);
+    transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s;
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1; visibility: visible;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+    z-index: 2;
+  }
+  .slide.exit-left {
+    opacity: 0; transform: translateX(-40px) scale(0.97);
+    z-index: 1;
+  }
+  .slide.exit-right {
+    opacity: 0; transform: translateX(40px) scale(0.97);
+    z-index: 1;
+  }
+  .slide.enter-left {
+    opacity: 0; visibility: visible;
+    transform: translateX(-40px) scale(0.97);
+    z-index: 1;
+  }
+  .slide.enter-right {
+    opacity: 0; visibility: visible;
+    transform: translateX(40px) scale(0.97);
+    z-index: 1;
+  }
+
+  .slide-head {
+    flex-shrink: 0; background: var(--sidebar_bg);
+    padding: 10px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .slide-head .phase { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gradient_1); }
+  .slide-head .logo-sm { height: 22px; }
+  .slide-head .date { font-size: 0.6rem; color: var(--sidebar-section); }
+
+  .slide-body { flex: 1; min-height: 0; padding: 20px 28px 16px; display: flex; flex-direction: column; overflow: hidden; }
+  .slide-foot {
+    flex-shrink: 0; padding: 6px 28px; border-top: 1px solid var(--border_color);
+    font-size: 0.58rem; color: var(--scroll_color);
+    display: flex; justify-content: space-between;
+  }
+
+  h1 { font-size: clamp(1.4rem, 2.5vw, 1.75rem); font-weight: 700; color: var(--title_color); line-height: 1.2; }
+  h2 { font-size: clamp(1.05rem, 2vw, 1.2rem); font-weight: 700; color: var(--title_color); margin-bottom: 4px; }
+  .sub { font-size: 0.76rem; color: var(--text-color); margin-top: 4px; }
+
+  .slide-cover .slide-body { align-items: center; text-align: center; justify-content: center; }
+  .slide-cover .logo { max-height: 50px; margin-bottom: 14px; filter: drop-shadow(0 4px 12px rgba(14,77,56,0.15)); }
+  .phase-pill {
+    display: inline-block; margin-top: 12px; padding: 5px 14px; border-radius: 4px;
+    background: rgba(16, 185, 129, 0.12); color: var(--gradient_3);
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    position: relative; overflow: hidden;
+  }
+  .phase-pill::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shine 3s ease-in-out infinite;
+  }
+  @keyframes shine { 0%,100% { left: -100%; } 50% { left: 150%; } }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .fill { flex: 1; min-height: 0; }
+
+  .card { background: white; border: 1px solid var(--border_color); border-radius: 6px; padding: 10px 12px; transition: transform 0.2s, box-shadow 0.2s; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(14,77,56,0.08); }
+  .card h3 { font-size: 0.66rem; font-weight: 700; color: var(--title_color); margin-bottom: 4px; }
+  .card p { font-size: 0.68rem; color: var(--text-color); line-height: 1.35; }
+
+  ul.compact { list-style: none; }
+  ul.compact li {
+    font-size: 0.68rem; color: var(--notification_title);
+    padding: 3px 0 3px 11px; position: relative;
+    border-bottom: 1px solid var(--border_color); line-height: 1.3;
+  }
+  ul.compact li:last-child { border-bottom: none; }
+  ul.compact li::before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--primary-color);
+  }
+
+  .stat { background: white; border: 1px solid var(--border_color); border-radius: 6px; padding: 8px; text-align: center; }
+  .stat .n { font-size: 1.2rem; font-weight: 700; color: var(--title_color); }
+  .stat .l { font-size: 0.52rem; font-weight: 600; color: var(--scroll_color); text-transform: uppercase; }
+
+  .wip-badge {
+    display: inline-block; font-size: 0.52rem; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px;
+    background: rgba(37, 99, 235, 0.1); color: #2563eb;
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05));
+    border: 1px solid var(--border_color); border-left: 3px solid var(--primary-color);
+    border-radius: 6px; padding: 12px 14px;
+    animation: glowBox 3s ease-in-out infinite;
+  }
+  @keyframes glowBox {
+    0%, 100% { box-shadow: 0 0 0 rgba(16,185,129,0); }
+    50% { box-shadow: 0 0 24px rgba(16,185,129,0.15); }
+  }
+  .example-box {
+    background: linear-gradient(135deg, #fffbeb, #fef9c3);
+    border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+    border-radius: 6px; padding: 12px 14px; margin-top: 10px;
+  }
+  .example-box p { font-size: 0.72rem; color: #78350f; line-height: 1.5; }
+  .example-box strong { color: #92400e; }
+  .loc-stat .n { font-size: 1.5rem; }
+
+  .flow { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 8px; }
+  .flow-step {
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 5px; padding: 6px 9px; font-size: 0.62rem;
+    color: var(--notification_title); font-weight: 600;
+  }
+  .flow-arrow { color: var(--gradient_1); font-size: 0.8rem; font-weight: 700; }
+
+  .wip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .wip-item {
+    display: flex; align-items: flex-start; gap: 7px;
+    background: white; border: 1px solid var(--border_color);
+    border-radius: 5px; padding: 7px 9px;
+    transition: border-color 0.3s;
+  }
+  .wip-item:hover { border-color: #93c5fd; }
+  .wip-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #2563eb;
+    margin-top: 4px; flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .wip-item strong { display: block; font-size: 0.64rem; color: var(--title_color); }
+  .wip-item span { font-size: 0.58rem; color: var(--text-color); line-height: 1.25; }
+
+  /* ── Slide content animations ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); } 50% { box-shadow: 0 0 0 5px rgba(37,99,235,0); } }
+  @keyframes flowGlow { 0%,100% { border-color: var(--border_color); } 50% { border-color: var(--gradient_1); box-shadow: 0 0 10px rgba(16,185,129,0.3); } }
+  @keyframes countPop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+
+  .slide.active .anim { animation: fadeUp 0.5s ease both; }
+  .slide.active.run-anim .anim { animation: fadeUp 0.5s ease both; }
+  .slide.active .anim-d1 { animation-delay: 0.06s; }
+  .slide.active .anim-d2 { animation-delay: 0.12s; }
+  .slide.active .anim-d3 { animation-delay: 0.18s; }
+  .slide.active .anim-d4 { animation-delay: 0.24s; }
+  .slide.active .anim-d5 { animation-delay: 0.30s; }
+  .slide.active .anim-d6 { animation-delay: 0.36s; }
+  .slide.active .anim-d7 { animation-delay: 0.42s; }
+  .slide.active .anim-d8 { animation-delay: 0.48s; }
+  .slide.active.run-anim .logo { animation: fadeIn 0.7s ease both; }
+  .slide.active.run-anim .stat .n { animation: countPop 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+  .slide.active .stat:nth-child(1) .n { animation-delay: 0.15s; }
+  .slide.active .stat:nth-child(2) .n { animation-delay: 0.25s; }
+  .slide.active .stat:nth-child(3) .n { animation-delay: 0.35s; }
+  .slide.active .stat:nth-child(4) .n { animation-delay: 0.45s; }
+  .slide.active .flow-step { animation: flowGlow 2.5s ease-in-out infinite; }
+  .slide.active .flow-step:nth-child(1) { animation-delay: 0s; }
+  .slide.active .flow-step:nth-child(3) { animation-delay: 0.35s; }
+  .slide.active .flow-step:nth-child(5) { animation-delay: 0.7s; }
+  .slide.active .flow-step:nth-child(7) { animation-delay: 1.05s; }
+
+  /* ── HUD controls ── */
+  .hud {
+    position: fixed; z-index: 50;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .hud.hidden { opacity: 0; pointer-events: none; transform: translateY(8px); }
+
+  .hud-top {
+    top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px;
+    background: linear-gradient(180deg, rgba(7,25,18,0.95), transparent);
+  }
+  .hud-top span { color: var(--sidebar-section); font-size: 0.7rem; font-weight: 500; }
+  .hud-actions { display: flex; gap: 6px; align-items: center; }
+  .hud button {
+    font-family: var(--base_font); font-size: 0.68rem; font-weight: 600;
+    padding: 6px 11px; border-radius: 5px; border: none; cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .hud button:hover { transform: scale(1.04); }
+  .btn-go { background: linear-gradient(90deg, var(--gradient_1), var(--gradient_2)); color: white; }
+  .btn-ghost { background: rgba(255,255,255,0.1); color: #7ea896; }
+  .slide-counter { color: #7ea896; font-size: 0.68rem; min-width: 48px; text-align: center; }
+
+  .hud-bottom {
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 24px 16px;
+    background: linear-gradient(0deg, rgba(7,25,18,0.95), transparent);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .progress-track {
+    width: min(400px, 80%); height: 3px;
+    background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gradient_1), var(--gradient_2));
+    border-radius: 2px; transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .progress-dots { display: flex; gap: 6px; }
+  .progress-dots button {
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+    background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.25s;
+  }
+  .progress-dots button.active { background: var(--gradient_1); transform: scale(1.3); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+  .hud-hint { font-size: 0.58rem; color: var(--sidebar-section); }
+
+  /* ── Help overlay ── */
+  .help-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(7,25,18,0.92); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+  }
+  .help-overlay.show { opacity: 1; visibility: visible; }
+  .help-box {
+    background: var(--bg_white); border-radius: 10px; padding: 28px 32px;
+    max-width: 420px; width: 90%;
+    border: 1px solid var(--border_color);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  }
+  .help-box h3 { font-size: 0.9rem; color: var(--title_color); margin-bottom: 14px; }
+  .help-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border_color); font-size: 0.72rem; }
+  .help-row:last-child { border-bottom: none; }
+  .help-row kbd {
+    background: var(--sidebar_bg); color: var(--gradient_1);
+    padding: 2px 8px; border-radius: 4px; font-family: inherit; font-size: 0.65rem; font-weight: 600;
+  }
+  .help-close { margin-top: 16px; width: 100%; }
+
+  /* ── Start splash ── */
+  .splash {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--sidebar_bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.6s, visibility 0.6s;
+  }
+  .splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash img { height: 56px; margin-bottom: 20px; animation: fadeIn 1s ease; }
+  .splash h2 { color: white; font-size: 1.2rem; margin-bottom: 8px; }
+  .splash p { color: var(--sidebar-section); font-size: 0.78rem; margin-bottom: 24px; }
+  .splash .keys { display: flex; gap: 12px; }
+  .splash kbd {
+    background: rgba(255,255,255,0.08); color: var(--gradient_1);
+    padding: 8px 16px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+
+  /* ── Overview grid ── */
+  .overview {
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(7,25,18,0.95); backdrop-filter: blur(6px);
+    padding: 60px 24px 24px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; align-content: start; overflow-y: auto;
+    opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+  }
+  .overview.show { opacity: 1; visibility: visible; }
+  .overview-thumb {
+    aspect-ratio: 16/9; background: var(--bg_white); border-radius: 6px;
+    border: 2px solid transparent; cursor: pointer; padding: 8px;
+    font-size: 0.55rem; color: var(--title_color); font-weight: 600;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .overview-thumb:hover { border-color: var(--gradient_1); transform: scale(1.03); }
+  .overview-thumb.current { border-color: var(--gradient_1); box-shadow: 0 0 16px rgba(16,185,129,0.3); }
+  .overview-thumb .num { font-size: 0.5rem; color: var(--scroll_color); margin-bottom: auto; }
+
+  :fullscreen .presenter { padding: 24px; }
+  :fullscreen .slide-viewport { max-height: calc(100vh - 48px); }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="bg-glow"></div>
+
+  <!-- Splash -->
+  <div class="splash" id="splash">
+    <img src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="VSS" />
+    <h2>Aethon Platform Update</h2>
+    <p>Press a key to start</p>
+    <div class="keys">
+      <kbd>F — Fullscreen</kbd>
+      <kbd>→ — Begin</kbd>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div class="help-overlay" id="help">
+    <div class="help-box">
+      <h3>Keyboard shortcuts</h3>
+      <div class="help-row"><span>Next slide</span><kbd>→ ↓ Space Enter</kbd></div>
+      <div class="help-row"><span>Previous slide</span><kbd>← ↑ Backspace</kbd></div>
+      <div class="help-row"><span>First / Last slide</span><kbd>Home / End</kbd></div>
+      <div class="help-row"><span>Fullscreen</span><kbd>F</kbd></div>
+      <div class="help-row"><span>Slide overview</span><kbd>O</kbd></div>
+      <div class="help-row"><span>This help</span><kbd>? or H</kbd></div>
+      <div class="help-row"><span>Hide controls</span><kbd>Move mouse away</kbd></div>
+      <button class="hud btn-go help-close" onclick="toggleHelp()">Close</button>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <div class="overview" id="overview"></div>
+
+  <!-- HUD top -->
+  <nav class="hud hud-top" id="hudTop">
+    <span>VSS · Dnyanda · Aethon</span>
+    <div class="hud-actions">
+      <span class="slide-counter" id="counter">1 / 8</span>
+      <button class="btn-ghost" id="btnPrev" type="button" title="Previous (←)">←</button>
+      <button class="btn-ghost" id="btnNext" type="button" title="Next (→)">→</button>
+      <button class="btn-ghost" id="btnOverview" type="button" title="Overview (O)">⊞</button>
+      <button class="btn-ghost" id="btnHelp" type="button" title="Help (?)">?</button>
+      <button class="btn-go" id="btnFs" type="button" title="Fullscreen (F)">⛶ Fullscreen</button>
+    </div>
+  </nav>
+
+  <!-- HUD bottom -->
+  <div class="hud hud-bottom" id="hudBottom">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-dots" id="progressDots"></div>
+    <span class="hud-hint">← → navigate · F fullscreen · O overview · ? help</span>
+  </div>
+
+  <!-- Slides -->
+  <div class="presenter">
+    <div class="slide-viewport" id="viewport">
+
+      <section class="slide slide-cover active" data-title="Cover" data-phase="Intro">
+        <div class="slide-head"><span class="phase">July 2026</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">dnyanda.vss.ac</span></div>
+        <div class="slide-body">
+          <img class="logo anim" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="VSS" />
+          <h1 class="anim anim-d1">Aethon Platform Update</h1>
+          <p class="sub anim anim-d2">VSS Warora & Dnyanda</p>
+          <p class="sub anim anim-d3" style="margin-top:8px;color:var(--scroll_color)">Where we are · What we are building · Where we are going</p>
+          <span class="phase-pill anim anim-d4">Need → Progress → Vision</span>
+        </div>
+        <div class="slide-foot"><span>Vidyarthi Sahayyak Samiti Warora</span><span>1 / 8</span></div>
+      </section>
+
+      <section class="slide" data-title="The need" data-phase="Need">
+        <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Why Aethon exists</span></div>
+        <div class="slide-body">
+          <h2 class="anim">The need</h2>
+          <p class="sub anim anim-d1" style="margin-bottom:8px">Custom platform for VSS & Dnyanda — built around how we work.</p>
+          <div class="grid-2 fill">
+            <div class="card anim anim-d2"><h3>The situation</h3><ul class="compact"><li>One Samiti — schools and hostels together</li><li>6 units, not one building</li><li>Paper, manual fees, delayed messages</li><li>Nothing off-the-shelf fit us</li></ul></div>
+            <div class="card anim anim-d3"><h3>What we needed</h3><ul class="compact"><li>Unified hostel & schools</li><li>Attendance & biometric</li><li>Fee collection</li><li>Document generation & upload</li><li>Timely messaging</li><li>Self-healing software</li></ul></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Need</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="What Aethon is" data-phase="Need">
+        <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">What Aethon is</span></div>
+        <div class="slide-body fill" style="justify-content:center">
+          <h2 class="anim">Not bought. Built. Ours.</h2>
+          <p class="sub anim anim-d1" style="margin-bottom:10px">Custom-developed for VSS & Dnyanda. Our servers. Our data. Built for us — not bought off a shelf.</p>
+          <div class="grid-3">
+            <div class="card anim anim-d2"><h3>6 units, one system</h3><p>School, college, four hostels.</p></div>
+            <div class="card anim anim-d3"><h3>Our workflows</h3><p>Fees, hostel, parents, staff.</p></div>
+            <div class="card anim anim-d4"><h3>No limits</h3><p>Grows as the organisation grows.</p></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Need</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="Scale of Aethon" data-phase="Need">
+        <div class="slide-head"><span class="phase">Need</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">How big is this?</span></div>
+        <div class="slide-body">
+          <h2 class="anim">2.3 lakh+ lines of code</h2>
+          <p class="sub anim anim-d1" style="margin-bottom:8px">Written for VSS & Dnyanda alone — PHP, modules, screens, logic.</p>
+          <div class="grid-3 anim anim-d2" style="margin-bottom:8px">
+            <div class="stat loc-stat"><div class="n" data-count="234000">0</div><div class="l">Lines of code</div></div>
+            <div class="stat loc-stat"><div class="n" data-count="583">0</div><div class="l">Database tables</div></div>
+            <div class="stat loc-stat"><div class="n" data-count="4700">0</div><div class="l">Pages if printed</div></div>
+          </div>
+          <div class="example-box anim anim-d3">
+            <p><strong>To picture it:</strong> printed out, this code fills around <strong>4,700 pages</strong> — more than the entire NEET syllabus: every NCERT Physics, Chemistry and Biology book from Class 11 and 12, put together. Written from scratch, only for VSS &amp; Dnyanda — and still growing.</p>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Need</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="Live today" data-phase="Progress">
+        <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Live today</span></div>
+        <div class="slide-body">
+          <h2 class="anim">Progress — live on dnyanda.vss.ac</h2>
+          <div class="grid-4 anim anim-d1" style="margin:6px 0 8px">
+            <div class="stat"><div class="n" data-count="664">0</div><div class="l">Students</div></div>
+            <div class="stat"><div class="n" data-count="1346">0</div><div class="l">Users</div></div>
+            <div class="stat"><div class="n" data-count="558">0</div><div class="l">Parents</div></div>
+            <div class="stat"><div class="n" data-count="6">0</div><div class="l">Units</div></div>
+          </div>
+          <div class="grid-2 fill">
+            <ul class="compact anim anim-d2"><li>Unified hostel & school operations</li><li>Attendance & biometric</li><li>Fee collection — 971 installments, Razorpay</li><li>Documents — generate & upload</li><li>Parent portal — 558 families</li></ul>
+            <ul class="compact anim anim-d3"><li>Email, WhatsApp, portal messaging</li><li>Exams, leave, library, transport</li><li>Public website — same platform</li><li>Tasks, roles — 1,500+ permissions</li><li>Daily operations across all units</li></ul>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Progress</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="Work in progress" data-phase="Progress">
+        <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Work in progress</span></div>
+        <div class="slide-body">
+          <h2 class="anim">Everything below is <span class="wip-badge">Work in progress</span></h2>
+          <p class="sub anim anim-d1" style="margin-bottom:8px">Nothing here is finished. All of it is being built.</p>
+          <div class="wip-grid fill">
+            <div class="wip-item anim anim-d2"><div class="wip-dot"></div><div><strong>Self-healing</strong><span>AI detects errors and fixes them instantly</span></div></div>
+            <div class="wip-item anim anim-d3"><div class="wip-dot"></div><div><strong>Parent messaging</strong><span>Email & WhatsApp reliability</span></div></div>
+            <div class="wip-item anim anim-d4"><div class="wip-dot"></div><div><strong>Mobile app</strong><span>Parents, wardens, staff</span></div></div>
+            <div class="wip-item anim anim-d5"><div class="wip-dot"></div><div><strong>Platform stability</strong><span>Security & error hardening</span></div></div>
+            <div class="wip-item anim anim-d6"><div class="wip-dot"></div><div><strong>Deeper reporting</strong><span>Trustee dashboards & insights</span></div></div>
+            <div class="wip-item anim anim-d7"><div class="wip-dot"></div><div><strong>And more</strong><span>As the Samiti's needs grow</span></div></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Progress</span><span></span></div>
+      </section>
+
+      <section class="slide" data-title="Self-healing" data-phase="Progress">
+        <div class="slide-head"><span class="phase">Progress</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">Self-healing <span class="wip-badge">WIP</span></span></div>
+        <div class="slide-body fill" style="justify-content:center">
+          <h2 class="anim">Self-healing <span class="wip-badge">Work in progress</span></h2>
+          <p class="sub anim anim-d1" style="margin-bottom:10px">Error occurs → AI analyses → fix applied → system continues. No waiting for a developer.</p>
+          <div class="card anim anim-d2" style="padding:12px 16px;text-align:center">
+            <div class="flow">
+              <span class="flow-step">Error</span><span class="flow-arrow">→</span>
+              <span class="flow-step">AI analyses</span><span class="flow-arrow">→</span>
+              <span class="flow-step">Fix applied</span><span class="flow-arrow">→</span>
+              <span class="flow-step">Continues</span>
+            </div>
+          </div>
+          <p class="anim anim-d4" style="font-size:0.7rem;color:var(--scroll_color);margin-top:10px;text-align:center">Fees, attendance, parent portal — keep running without manual intervention.</p>
+        </div>
+        <div class="slide-foot"><span>Progress</span><span></span></div>
+      </section>
+
+      <section class="slide slide-cover" data-title="Vision" data-phase="Vision">
+        <div class="slide-head"><span class="phase">Vision</span><img class="logo-sm" src="https://dnyanda.vss.ac/public/uploads/settings/20b54ecaeed569cbe68a5ec4992dd29a.png" alt="" /><span class="date">No limits</span></div>
+        <div class="slide-body">
+          <h1 class="anim" style="font-size:clamp(1.2rem,2.2vw,1.5rem)">Grows with the organisation.<br>No limits.</h1>
+          <div class="highlight-box anim anim-d1" style="margin:12px 0;text-align:left;max-width:520px">
+            <p><strong>Aethon expands as VSS & Dnyanda expand.</strong> New units, programmes, staff, parents — the platform grows with us. No vendor cap. No license tier. No ceiling.</p>
+          </div>
+          <p class="sub anim anim-d2">Questions & discussion</p>
+          <div class="grid-3 anim anim-d3" style="margin-top:10px;text-align:left;width:100%;max-width:520px">
+            <div class="card"><h3>Need</h3><p>Why we built it.</p></div>
+            <div class="card"><h3>Progress</h3><p>What works + what's being built.</p></div>
+            <div class="card"><h3>Vision</h3><p>Grows forever with us.</p></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>VSS · Dnyanda</span><span>Vision</span></div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progressFill');
+  const progressDots = document.getElementById('progressDots');
+  const overview = document.getElementById('overview');
+  const splash = document.getElementById('splash');
+  const help = document.getElementById('help');
+  const hudTop = document.getElementById('hudTop');
+  const hudBottom = document.getElementById('hudBottom');
+  let current = 0;
+  let started = false;
+  let overviewOpen = false;
+  let hudTimer;
+
+  // Build overview thumbs & dots
+  slides.forEach((s, i) => {
+    const dot = document.createElement('button');
+    dot.title = s.dataset.title;
+    dot.onclick = () => { closeOverview(); goTo(i, i > current ? 1 : -1); };
+    progressDots.appendChild(dot);
+
+    const thumb = document.createElement('button');
+    thumb.className = 'overview-thumb';
+    thumb.innerHTML = `<span class="num">${i + 1}</span><span>${s.dataset.phase}</span><strong>${s.dataset.title}</strong>`;
+    thumb.onclick = () => { closeOverview(); goTo(i, i > current ? 1 : -1); };
+    overview.appendChild(thumb);
+  });
+
+  function animateCounters(slide) {
+    slide.querySelectorAll('[data-count]').forEach(el => {
+      const target = +el.dataset.count;
+      const duration = 900;
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * ease).toLocaleString();
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      el.textContent = '0';
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function playAnimations(slide) {
+    slide.classList.remove('run-anim');
+    slide.querySelectorAll('.anim, .logo, .stat .n').forEach(el => {
+      el.style.animation = 'none';
+      el.style.opacity = '';
+      void el.offsetHeight;
+      el.style.animation = '';
+    });
+    void slide.offsetHeight;
+    slide.classList.add('run-anim');
+  }
+
+  function updateUI() {
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progressFill.style.width = `${((current + 1) / slides.length) * 100}%`;
+    progressDots.querySelectorAll('button').forEach((d, j) => d.classList.toggle('active', j === current));
+    overview.querySelectorAll('.overview-thumb').forEach((t, j) => t.classList.toggle('current', j === current));
+  }
+
+  function goTo(i, dir = 1) {
+    if (i < 0 || i >= slides.length || i === current) return;
+
+    const outgoing = slides[current];
+    const incoming = slides[i];
+
+    // Clear all transition states
+    slides.forEach(s => s.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right', 'run-anim'));
+
+    // Outgoing animation
+    outgoing.classList.remove('active');
+    outgoing.classList.add(dir > 0 ? 'exit-left' : 'exit-right');
+
+    // Incoming: start from correct side, then activate
+    incoming.classList.add(dir > 0 ? 'enter-right' : 'enter-left');
+
+    requestAnimationFrame(() => {
+      incoming.classList.remove('enter-left', 'enter-right');
+      incoming.classList.add('active');
+      playAnimations(incoming);
+      if (incoming.querySelector('[data-count]')) animateCounters(incoming);
+    });
+
+    setTimeout(() => {
+      outgoing.classList.remove('exit-left', 'exit-right');
+    }, 480);
+
+    current = i;
+    updateUI();
+  }
+
+  function next() { goTo(current + 1, 1); }
+  function prev() { goTo(current - 1, -1); }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function toggleHelp() { help.classList.toggle('show'); }
+  function openOverview() { overviewOpen = true; overview.classList.add('show'); }
+  function closeOverview() { overviewOpen = false; overview.classList.remove('show'); }
+  function toggleOverview() { overviewOpen ? closeOverview() : openOverview(); }
+
+  function start() {
+    if (started) return;
+    started = true;
+    splash.classList.add('hide');
+    playAnimations(slides[0]);
+    updateUI();
+    showHud();
+  }
+
+  function showHud() {
+    hudTop.classList.remove('hidden');
+    hudBottom.classList.remove('hidden');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => {
+      if (!overviewOpen && !help.classList.contains('show')) {
+        hudTop.classList.add('hidden');
+        hudBottom.classList.add('hidden');
+      }
+    }, 3000);
+  }
+
+  // Buttons
+  document.getElementById('btnPrev').onclick = () => { start(); prev(); };
+  document.getElementById('btnNext').onclick = () => { start(); next(); };
+  document.getElementById('btnFs').onclick = () => { start(); toggleFullscreen(); };
+  document.getElementById('btnHelp').onclick = () => { start(); toggleHelp(); };
+  document.getElementById('btnOverview').onclick = () => { start(); toggleOverview(); };
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (help.classList.contains('show') && e.key === 'Escape') { toggleHelp(); return; }
+    if (overviewOpen && e.key === 'Escape') { closeOverview(); return; }
+
+    if (!started && !['F','f'].includes(e.key)) start();
+
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'Enter': case 'PageDown':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'Backspace': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); goTo(0, -1); break;
+      case 'End': e.preventDefault(); goTo(slides.length - 1, 1); break;
+      case 'f': case 'F': e.preventDefault(); toggleFullscreen(); break;
+      case 'o': case 'O': e.preventDefault(); toggleOverview(); break;
+      case '?': case 'h': case 'H': e.preventDefault(); toggleHelp(); break;
+    }
+    showHud();
+  });
+
+  document.addEventListener('mousemove', showHud);
+  document.addEventListener('click', () => { if (!started) start(); });
+
+  // Particle background
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  for (let i = 0; i < 50; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 2 + 0.5,
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: (Math.random() - 0.5) * 0.3,
+      o: Math.random() * 0.25 + 0.05,
+    });
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.dx; p.y += p.dy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(16, 185, 129, ${p.o})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+  </script>
+</body>
+</html>

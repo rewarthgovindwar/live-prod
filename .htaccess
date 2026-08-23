@@ -1,0 +1,43 @@
+# License offline patch marker
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks -MultiViews -Indexes
+    RewriteEngine On
+    RewriteBase /
+
+    # Block sensitive paths (survives site promotion; LiteSpeed-compatible)
+    RewriteRule ^\.env$ - [F,L]
+    RewriteRule ^\.env\. - [F,L]
+    RewriteRule ^composer\.(json|lock)$ - [F,L]
+    RewriteRule ^artisan$ - [F,L]
+    RewriteRule ^package(-lock)?\.json$ - [F,L]
+    RewriteRule ^storage/logs/ - [F,L]
+    RewriteRule ^scripts/ - [F,L]
+    RewriteRule ^vendor/ - [F,L]
+    RewriteRule ^apply_.*\.php$ - [F,L]
+    RewriteRule ^_deploy_.*\.(ps1|sh)$ - [F,L]
+    RewriteRule ^\.git - [F,L]
+
+    # Redirect Trailing Slashes...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Handle Authorization Header...
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files .zip>
+    Order allow,deny
+    Deny from all
+</Files>
