@@ -49,3 +49,23 @@ Message the business WhatsApp number from a personal phone. You should see:
 - Hindi/Marathi language picker if needed
 - Order confirmation templates
 - Re-enable AI intent routing once flows are stable
+
+## Main website (artnestindia.com)
+
+Updated site source is in [`artnest-site/`](../artnest-site/). Changes mirror the WhatsApp bot and Instagram @artnest_handcraft tone:
+
+- “ArtNest family” hero + Made in India / 10K+ Instagram badge
+- **How to Order** section (catalogue → screenshot → WhatsApp)
+- Warmer contact copy linking Instagram
+
+**Deploy:** upload `index.html`, `styles.css`, `script.js` via StackCP File Manager or FTP (`ftp.artnestindia.com`). Hosting panel credentials were locked during this session — use https://3735053a.stackcp.com/login or reset via Serverbyt.
+
+## Instagram (@artnest_handcraft)
+
+Brand voice observed (public posts):
+
+- Warm, grateful, community-focused (“10K FAM”, “one order at a time”)
+- Products: silicone moulds, resin supplies, handmade craft materials
+- Customers often ask “how to order” in comments — website + WhatsApp bot now answer this clearly
+
+WhatsApp Business profile updated live with Instagram as second website link and order steps in the description.

@@ -2,8 +2,16 @@
 
 Production notes and deployment docs for ArtNest services.
 
-## ArtNest WhatsApp bot
+## ArtNest Handmadecraft
 
-Customer-facing WhatsApp CRM: **https://whatsapp.artnestindia.com**
+| Service | URL |
+|---------|-----|
+| Main website | https://artnestindia.com |
+| WhatsApp CRM | https://whatsapp.artnestindia.com |
+| Instagram | https://www.instagram.com/artnest_handcraft/ |
+| Orders (WhatsApp) | https://wa.me/919175278533 |
 
-See [docs/artnest-whatsapp-bot.md](docs/artnest-whatsapp-bot.md) for catalogue link, order flow, and bot configuration.
+### Docs
+
+- [WhatsApp bot operator guide](docs/artnest-whatsapp-bot.md)
+- [Website source & deploy](artnest-site/README.md)
